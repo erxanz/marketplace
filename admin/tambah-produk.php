@@ -8,9 +8,14 @@ session_start();
 require_once '../config/koneksi.php';
 require_once '../config/fungsi.php';
 
-// Cek login dan role (hanya admin / penjual)
+// Cek login dan role (hanya penjual / pemilik toko)
 wajib_login('../login.php');
-wajib_role(['admin', 'penjual'], '../index.php');
+// Admin dialihkan ke halaman Kelola Toko
+if (($_SESSION['role'] ?? '') === 'admin') {
+    header("Location: toko.php");
+    exit;
+}
+wajib_role(['penjual'], '../index.php');
 
 $pesan_form = '';
 

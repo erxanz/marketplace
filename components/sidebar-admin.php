@@ -10,11 +10,21 @@ $base       = $base ?? '';
 $menu_aktif = $menu_aktif ?? '';
 $role_user  = $_SESSION['role'] ?? 'pembeli';
 
-// Daftar menu sidebar
-$menu = [
-    ['ikon' => 'layout-dashboard', 'teks' => 'Kelola Produk', 'url' => 'produk.php',   'aktif' => ['produk', 'edit', 'hapus']],
-    ['ikon' => 'plus-circle',      'teks' => 'Tambah Produk', 'url' => 'tambah-produk.php', 'aktif' => ['tambah']],
-];
+// Menu berbeda per role:
+// - admin    -> Kelola Toko (kelola status penjual)
+// - penjual  -> Kelola Produk (produk milik sendiri)
+if ($role_user === 'admin') {
+    $label_grup = 'Toko';
+    $menu = [
+        ['ikon' => 'store', 'teks' => 'Kelola Toko', 'url' => 'toko.php', 'aktif' => ['toko']],
+    ];
+} else {
+    $label_grup = 'Kelola Produk';
+    $menu = [
+        ['ikon' => 'layout-dashboard', 'teks' => 'Kelola Produk', 'url' => 'produk.php',   'aktif' => ['produk', 'edit', 'hapus']],
+        ['ikon' => 'plus-circle',      'teks' => 'Tambah Produk', 'url' => 'tambah-produk.php', 'aktif' => ['tambah']],
+    ];
+}
 ?>
 <!-- SIDEBAR -->
 <aside id="sidebar"
@@ -57,7 +67,7 @@ $menu = [
         </div>
 
         <div>
-            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Kelola Produk</p>
+            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500"><?= $label_grup ?></p>
             <ul class="space-y-1">
                 <?php foreach ($menu as $m): ?>
                     <?php $menu_dipilih = in_array($menu_aktif, $m['aktif']); ?>

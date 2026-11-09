@@ -89,6 +89,8 @@ function tampilkan_pesan()
         'hapus-gagal'      => ['danger', 'Produk tidak dapat dihapus karena sudah dipakai dalam transaksi.'],
         'bukan-milik'      => ['danger', 'Data tidak dapat diproses.'],
         'data-tidak-ada'   => ['danger', 'Data tidak ditemukan.'],
+        'toko-diubah'      => ['success', 'Status toko berhasil diperbarui.'],
+        'toko-invalid'     => ['danger', 'Toko tidak ditemukan.'],
         'keranjang-sukses' => ['success', 'Produk berhasil ditambahkan ke keranjang.'],
         'keranjang-stok'   => ['danger', 'Jumlah produk melebihi stok yang tersedia.'],
         'keranjang-gagal'  => ['danger', 'Produk tidak dapat ditambahkan (produk tidak aktif atau tidak ditemukan).'],

@@ -22,7 +22,7 @@ $sql = "SELECT p.id_produk, p.nama_produk, p.harga, p.gambar, p.stok,
         FROM produk p
         JOIN kategori k ON p.id_kategori = k.id_kategori
         JOIN users u ON p.id_penjual = u.id_user
-        WHERE p.status = 'aktif'";
+        WHERE p.status = 'aktif' AND u.status = 'aktif'";
 $tipe   = "";
 $params = [];
 

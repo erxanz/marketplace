@@ -12,13 +12,14 @@ require_once 'config/fungsi.php';
 $id_produk = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 // Ambil produk + kategori + penjual dengan prepared statement
+// (produk dari toko nonaktif dianggap tidak ditemukan)
 $sql = "SELECT p.*, k.nama_kategori,
                u.nama AS nama_penjual, u.no_hp AS no_hp_penjual,
                u.alamat AS alamat_penjual
         FROM produk p
         JOIN kategori k ON p.id_kategori = k.id_kategori
         JOIN users u ON p.id_penjual = u.id_user
-        WHERE p.id_produk = ?";
+        WHERE p.id_produk = ? AND u.status = 'aktif'";
 $stmt = mysqli_prepare($koneksi, $sql);
 mysqli_stmt_bind_param($stmt, "i", $id_produk);
 mysqli_stmt_execute($stmt);

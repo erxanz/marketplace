@@ -13,6 +13,8 @@ require_once 'config/fungsi.php';
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] === 'pembeli') {
         header("Location: index.php");
+    } elseif ($_SESSION['role'] === 'admin') {
+        header("Location: admin/toko.php");
     } else {
         header("Location: admin/produk.php");
     }
@@ -48,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Arahkan sesuai role
             if ($user['role'] === 'pembeli') {
                 header("Location: index.php");
+            } elseif ($user['role'] === 'admin') {
+                header("Location: admin/toko.php");
             } else {
                 header("Location: admin/produk.php");
             }

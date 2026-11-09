@@ -6,8 +6,8 @@
 // ============================================================
 
 $host     = "localhost";
-$username = "root";
-$password = "";          // default XAMPP: password kosong
+$username = "badio";
+$password = "badio123";          // default XAMPP: password kosong
 $database = "marketplace_db";
 
 // Membuka koneksi database

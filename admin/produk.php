@@ -11,27 +11,23 @@ require_once '../config/fungsi.php';
 
 // Cek login dan role
 wajib_login('../login.php');
-wajib_role(['admin', 'penjual'], '../index.php');
-
-// Ambil semua produk + nama kategori
-// Admin melihat semua produk, penjual hanya produknya sendiri
-if ($_SESSION['role'] === 'admin') {
-    $sql = "SELECT p.*, k.nama_kategori, u.nama AS nama_penjual
-            FROM produk p
-            JOIN kategori k ON p.id_kategori = k.id_kategori
-            JOIN users u ON p.id_penjual = u.id_user
-            ORDER BY p.id_produk DESC";
-    $stmt = mysqli_prepare($koneksi, $sql);
-} else {
-    $sql = "SELECT p.*, k.nama_kategori, u.nama AS nama_penjual
-            FROM produk p
-            JOIN kategori k ON p.id_kategori = k.id_kategori
-            JOIN users u ON p.id_penjual = u.id_user
-            WHERE p.id_penjual = ?
-            ORDER BY p.id_produk DESC";
-    $stmt = mysqli_prepare($koneksi, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $_SESSION['user_id']);
+// Hanya penjual (pemilik toko) yang boleh kelola produk;
+// admin dialihkan ke halaman Kelola Toko
+if (($_SESSION['role'] ?? '') === 'admin') {
+    header("Location: toko.php");
+    exit;
 }
+wajib_role(['penjual'], '../index.php');
+
+// Ambil produk milik penjual yang login + nama kategori
+$sql = "SELECT p.*, k.nama_kategori, u.nama AS nama_penjual
+        FROM produk p
+        JOIN kategori k ON p.id_kategori = k.id_kategori
+        JOIN users u ON p.id_penjual = u.id_user
+        WHERE p.id_penjual = ?
+        ORDER BY p.id_produk DESC";
+$stmt = mysqli_prepare($koneksi, $sql);
+mysqli_stmt_bind_param($stmt, "i", $_SESSION['user_id']);
 mysqli_stmt_execute($stmt);
 $hasil = mysqli_stmt_get_result($stmt);
 
@@ -114,7 +110,7 @@ require_once __DIR__ . '/../components/sidebar-admin.php';
             <div>
                 <h2 class="text-base font-bold text-slate-800">Daftar Produk</h2>
                 <p class="text-xs text-slate-500">
-                    <?= $_SESSION['role'] === 'admin' ? 'Semua produk di marketplace' : 'Produk milik Anda' ?>
+                    Produk milik Anda
                     &middot; <?= $total_produk ?> data
                 </p>
             </div>

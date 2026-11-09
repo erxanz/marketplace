@@ -4,7 +4,8 @@ Aplikasi marketplace sederhana dibuat dengan **PHP Native (tanpa framework)**, *
 
 Fitur utama:
 
-- Penjual/admin mengelola produk (tambah, ubah, hapus) — tampilan tabel di desktop, daftar card di mobile.
+- **Penjual (pemilik toko)** mengelola produk miliknya sendiri — tambah, ubah, hapus; tabel di desktop, daftar card di mobile.
+- **Admin tidak bisa kelola produk** (dialihkan ke Kelola Toko); admin mengelola **toko**: daftar penjual + aktif/nonaktifkan toko. Toko nonaktif → seluruh produknya disembunyikan dari beranda.
 - Pembeli melihat daftar dan detail produk.
 - Pencarian produk & filter kategori langsung dari beranda.
 - Registrasi akun baru (pembeli/penjual) melalui `register.php`.
@@ -65,7 +66,7 @@ Data akun sudah tersedia di tabel `users` (password sudah di-hash dengan `passwo
 | **Pembeli** | `siti@marketplace.test` | `pembeli123` | Beranda (`index.php`) |
 | **Penjual** | `budi@marketplace.test` | `penjual123` | Kelola Produk (`admin/produk.php`) |
 | **Penjual** | `andi@marketplace.test` | `penjual123` | Kelola Produk (`admin/produk.php`) |
-| **Admin** | `admin@marketplace.test` | `admin123` | Kelola Produk (`admin/produk.php`) |
+| **Admin** | `admin@marketplace.test` | `admin123` | Kelola Toko (`admin/toko.php`) |
 
 Halaman login: `http://localhost/marketplace/login.php`
 
@@ -88,7 +89,8 @@ marketplace/
 │   ├── topbar-admin.php   # Header atas halaman admin
 │   └── scripts.php        # Lucide icons + app.js
 ├── admin/
-│   ├── produk.php         # Dashboard: statistik + daftar produk (CRUD)
+│   ├── toko.php            # KELOLA TOKO (khusus admin): daftar toko + aktif/nonaktifkan
+│   ├── produk.php         # Dashboard penjual: statistik + daftar produk (CRUD)
 │   ├── tambah-produk.php  # Form tambah produk + upload gambar
 │   ├── edit-produk.php    # Form ubah produk
 │   └── hapus-produk.php   # Konfirmasi & hapus produk
@@ -115,7 +117,7 @@ marketplace/
 └── README.md
 ```
 
-> Catatan: `login.php`, `logout.php`, `register.php`, `config/fungsi.php`, dan folder `components/` adalah file tambahan untuk autentikasi, register, dan komponen UI bersama; struktur utama sesuai soal tidak diubah. `assets/css/style.css` dan `assets/js/script.js` versi lama (Bootstrap) sudah digantikan oleh `input.css`/`output.css` dan `app.js`. Folder `node_modules/` tidak di-track git (lihat `.gitignore`).
+> Catatan: `login.php`, `logout.php`, `register.php`, `admin/toko.php`, `config/fungsi.php`, dan folder `components/` adalah file tambahan untuk autentikasi, register, kelola toko, dan komponen UI bersama; struktur utama sesuai soal tidak diubah. `assets/css/style.css` dan `assets/js/script.js` versi lama (Bootstrap) sudah digantikan oleh `input.css`/`output.css` dan `app.js`. Folder `node_modules/` tidak di-track git (lihat `.gitignore`).
 
 ---
 
@@ -125,13 +127,19 @@ marketplace/
 
 | No | Tabel | Fungsi |
 |---|---|---|
-| 1 | `users` | Admin, penjual, pembeli (role: `admin` / `penjual` / `pembeli`) |
+| 1 | `users` | Admin, penjual, pembeli (role: `admin` / `penjual` / `pembeli`; kolom `status` = `aktif`/`nonaktif` untuk toko) |
 | 2 | `kategori` | Kategori produk |
 | 3 | `produk` | Produk → FK ke `users` (penjual) dan `kategori` |
 | 4 | `keranjang` | Keranjang tiap user (`status`: `aktif` / `checkout`) |
 | 5 | `detail_keranjang` | Isi keranjang → FK ke `keranjang` dan `produk`, unik per (keranjang, produk) |
 | 6 | `pesanan` | Transaksi pesanan → FK ke `users` |
 | 7 | `detail_pesanan` | Rincian pesanan (jumlah, harga saat pesan, subtotal) |
+
+Aturan peran & toko:
+
+- **Penjual** adalah pemilik toko — hanya bisa melihat/mengubah/menghapus produk miliknya sendiri.
+- **Admin** tidak mengelola produk; admin mengelola **toko** (`admin/toko.php`): mengaktifkan/menonaktifkan penjual.
+- Toko berstatus `nonaktif` → seluruh produknya tidak tampil di beranda dan halaman detail (baik lewat pencarian maupun filter).
 
 Alur checkout:
 
@@ -155,15 +163,21 @@ Alur checkout:
 6. Isi **Alamat Pengiriman** → klik **Checkout Sekarang**.
 7. Halaman "Pesanan Berhasil" menampilkan nomor pesanan, rincian, dan total belanja.
 
-### B. Sebagai Penjual / Admin
-1. Login menggunakan akun penjual atau admin.
-2. Menu **Kelola Produk** → daftar produk tampil dalam tabel.
+### B. Sebagai Penjual (pemilik toko)
+1. Login menggunakan akun penjual → langsung ke **Kelola Produk** (`admin/produk.php`).
    - Penjual hanya melihat/mengelola produk miliknya sendiri.
-   - Admin melihat semua produk.
-3. **+ Tambah Produk** → isi nama, kategori, deskripsi, harga, stok, gambar (JPG/PNG/WEBP, maks 2 MB), status → **Simpan Produk**.
-4. **Edit** → ubah data; kosongkan input gambar jika tidak ingin mengganti gambar.
-5. **Hapus** → muncul halaman konfirmasi → **Ya, Hapus**.
+   - Membuka halaman admin lain (mis. Kelola Toko) akan ditolak.
+2. **+ Tambah Produk** → isi nama, kategori, deskripsi, harga, stok, gambar (JPG/PNG/WEBP, maks 2 MB), status → **Simpan Produk**.
+3. **Edit** → ubah data; kosongkan input gambar jika tidak ingin mengganti gambar.
+4. **Hapus** → muncul halaman konfirmasi → **Ya, Hapus**.
    - Produk yang sudah tercatat di `detail_pesanan` / `detail_keranjang` **tidak bisa dihapus** (dilindungi Foreign Key).
+
+### C. Sebagai Admin (kelola toko)
+1. Login menggunakan akun admin → langsung ke **Kelola Toko** (`admin/toko.php`).
+2. Melihat daftar semua toko (penjual) beserta jumlah produk, total stok, dan status.
+3. **Nonaktifkan** toko → seluruh produk tokonya langsung tidak tampil di beranda & detail.
+4. **Aktifkan** kembali → produk tokonya tampil kembali.
+5. Admin **tidak bisa** membuka halaman kelola produk (dialihkan ke Kelola Toko).
 
 ---
 
@@ -183,6 +197,8 @@ Skenario berikut sudah diuji dan berjalan tanpa error PHP/MySQL:
 10. Rincian masuk ke `detail_pesanan`.
 11. Stok produk berkurang sesuai jumlah pesanan.
 12. Pesanan gagal (stok tidak cukup) menyebabkan rollback — data tidak berubah sebagian.
+13. Admin login → diarahkan ke Kelola Toko; membuka halaman kelola produk dialihkan (penjual tetap bisa).
+14. Admin menonaktifkan toko → produk tokonya hilang dari beranda, diaktifkan lagi → tampil kembali.
 
 Pemeriksaan tampilan responsif (viewport 375 px mobile & 1440 px desktop):
 

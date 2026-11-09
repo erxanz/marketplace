@@ -13,23 +13,22 @@ require_once '../config/fungsi.php';
 
 // Cek login dan role
 wajib_login('../login.php');
-wajib_role(['admin', 'penjual'], '../index.php');
+// Hanya penjual (pemilik toko); admin dialihkan ke Kelola Toko
+if (($_SESSION['role'] ?? '') === 'admin') {
+    header("Location: toko.php");
+    exit;
+}
+wajib_role(['penjual'], '../index.php');
 
 $id_produk = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 // ------------------------------------------------------------
-// Ambil data produk (penjual hanya boleh hapus produknya)
+// Ambil data produk (hanya produk milik penjual yang login)
 // ------------------------------------------------------------
-$sql = "SELECT id_produk, nama_produk, gambar FROM produk WHERE id_produk = ?";
-if ($_SESSION['role'] !== 'admin') {
-    $sql .= " AND id_penjual = ?";
-}
+$sql = "SELECT id_produk, nama_produk, gambar
+        FROM produk WHERE id_produk = ? AND id_penjual = ?";
 $stmt = mysqli_prepare($koneksi, $sql);
-if ($_SESSION['role'] !== 'admin') {
-    mysqli_stmt_bind_param($stmt, "ii", $id_produk, $_SESSION['user_id']);
-} else {
-    mysqli_stmt_bind_param($stmt, "i", $id_produk);
-}
+mysqli_stmt_bind_param($stmt, "ii", $id_produk, $_SESSION['user_id']);
 mysqli_stmt_execute($stmt);
 $hasil  = mysqli_stmt_get_result($stmt);
 $produk = mysqli_fetch_assoc($hasil);

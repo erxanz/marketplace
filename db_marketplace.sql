@@ -22,6 +22,8 @@ DROP TABLE IF EXISTS users;
 -- 1. TABEL USERS
 -- Menyimpan data pembeli, penjual, dan admin
 -- Password disimpan dalam bentuk password_hash()
+-- status: untuk toko (role penjual) — 'nonaktif' membuat
+--         seluruh produk tokonya tidak tampil di beranda
 -- =========================================
 
 CREATE TABLE users (
@@ -33,6 +35,8 @@ CREATE TABLE users (
     alamat TEXT,
     role ENUM('pembeli', 'penjual', 'admin')
         NOT NULL DEFAULT 'pembeli',
+    status ENUM('aktif', 'nonaktif')
+        NOT NULL DEFAULT 'aktif',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

@@ -46,8 +46,10 @@ $cari = $_GET['cari'] ?? '';
                     <?php endif; ?>
                 </span>
             </a>
-            <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'penjual'])): ?>
+            <?php if (($_SESSION['role'] ?? '') === 'penjual'): ?>
                 <a href="<?= $base ?>admin/produk.php" class="nav-link">Kelola Produk</a>
+            <?php elseif (($_SESSION['role'] ?? '') === 'admin'): ?>
+                <a href="<?= $base ?>admin/toko.php" class="nav-link">Kelola Toko</a>
             <?php endif; ?>
         </div>
 
@@ -96,8 +98,10 @@ $cari = $_GET['cari'] ?? '';
                     <span class="rounded-full bg-primary-600 px-1.5 text-[10px] font-bold text-white"><?= $jumlah_keranjang ?></span>
                 <?php endif; ?>
             </a>
-            <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'penjual'])): ?>
+            <?php if (($_SESSION['role'] ?? '') === 'penjual'): ?>
                 <a href="<?= $base ?>admin/produk.php" class="nav-link">Kelola Produk</a>
+            <?php elseif (($_SESSION['role'] ?? '') === 'admin'): ?>
+                <a href="<?= $base ?>admin/toko.php" class="nav-link">Kelola Toko</a>
             <?php endif; ?>
 
             <div class="mt-2 border-t border-slate-100 pt-2">
