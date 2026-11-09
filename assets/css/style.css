@@ -1,0 +1,60 @@
+/* =========================================
+   FILE: assets/css/style.css
+   Fungsi : Penyesuaian tampilan tambahan
+            di luar Bootstrap (sederhana & rapi)
+   ========================================= */
+
+body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin-top: auto;
+}
+
+/* Kartu produk di halaman beranda */
+.produk-card {
+    transition: transform .15s ease, box-shadow .15s ease;
+    border: 1px solid #e9ecef;
+}
+
+.produk-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12);
+}
+
+.produk-gambar {
+    height: 180px;
+    object-fit: cover;
+    background: #e9ecef;
+}
+
+.harga {
+    font-size: 1.05rem;
+}
+
+/* Tabel keranjang & admin */
+.table th {
+    white-space: nowrap;
+}
+
+.table-gambar {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: .375rem;
+    border: 1px solid #dee2e6;
+}
+
+/* Kartu login */
+.card {
+    border: none;
+}
+
+/* Tombol jumlah di keranjang */
+.input-jumlah {
+    width: 90px;
+}
