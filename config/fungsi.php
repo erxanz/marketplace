@@ -101,6 +101,10 @@ function tampilkan_pesan()
         'checkout-gagal'   => ['danger', 'Checkout gagal, transaksi dibatalkan. Silakan coba lagi.'],
         'upload-gagal'     => ['danger', 'Gagal mengunggah gambar. Pastikan format JPG/PNG/WEBP dan ukuran maksimal 2 MB.'],
         'input-kurang'     => ['danger', 'Semua field wajib diisi dengan benar.'],
+        'register-sukses'  => ['success', 'Pendaftaran berhasil. Silakan login menggunakan akun baru Anda.'],
+        'password-cocok'   => ['danger', 'Konfirmasi password tidak sama.'],
+        'password-pendek'  => ['danger', 'Password minimal 6 karakter.'],
+        'email-sipakai'    => ['danger', 'Email sudah terdaftar, silakan gunakan email lain.'],
     ];
 
     if (!isset($daftar_pesan[$_GET['pesan']])) {
@@ -110,9 +114,22 @@ function tampilkan_pesan()
     $tipe = $daftar_pesan[$_GET['pesan']][0];
     $teks = $daftar_pesan[$_GET['pesan']][1];
 
-    return '<div class="alert alert-' . $tipe . ' alert-dismissible fade show" role="alert">'
-        . htmlspecialchars($teks)
-        . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button></div>';
+    // Ikon Lucide sesuai jenis pesan
+    $ikon = [
+        'success' => 'circle-check',
+        'danger'  => 'circle-alert',
+        'warning' => 'triangle-alert',
+        'info'    => 'info',
+    ];
+
+    // Alert gaya Tailwind (dibuat dari komponen .alert-* di input.css)
+    return '<div class="alert-' . $tipe . ' alert-dismissible relative" role="alert">'
+        . '<i data-lucide="' . $ikon[$tipe] . '" class="mt-0.5 h-4 w-4 shrink-0"></i>'
+        . '<span class="flex-1 pr-6">' . htmlspecialchars($teks) . '</span>'
+        . '<button type="button" data-dismiss-alert aria-label="Tutup pesan"'
+        . ' class="absolute right-2 top-2 rounded-lg p-1 opacity-60 transition hover:opacity-100">'
+        . '<i data-lucide="x" class="h-4 w-4"></i></button>'
+        . '</div>';
 }
 
 // ------------------------------------------------------------

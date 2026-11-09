@@ -2,7 +2,7 @@
 // ============================================================
 // FILE: detail-produk.php
 // Fungsi : Menampilkan detail satu produk berdasarkan ?id=...
-//          Termasuk deskripsi, stok, kategori, dan info penjual.
+//          (logika pengambilan data tidak berubah dari versi asli)
 // ============================================================
 session_start();
 require_once 'config/koneksi.php';
@@ -22,159 +22,169 @@ $sql = "SELECT p.*, k.nama_kategori,
 $stmt = mysqli_prepare($koneksi, $sql);
 mysqli_stmt_bind_param($stmt, "i", $id_produk);
 mysqli_stmt_execute($stmt);
-$hasil   = mysqli_stmt_get_result($stmt);
-$produk  = mysqli_fetch_assoc($hasil);
+$hasil  = mysqli_stmt_get_result($stmt);
+$produk = mysqli_fetch_assoc($hasil);
 
-$jumlah_keranjang = jumlah_keranjang($koneksi);
+$base = '';
+$judul = 'Detail Produk';
+require_once __DIR__ . '/components/head.php';
+require_once __DIR__ . '/components/navbar.php';
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Detail Produk - Marketplace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
-</head>
-<body>
 
-<!-- ================= NAVBAR ================= -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="index.php">Marketplace</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="menuNavbar">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Beranda</a></li>
-                <li class="nav-item">
-                    <a class="nav-link" href="keranjang.php">
-                        Keranjang
-                        <?php if ($jumlah_keranjang > 0): ?>
-                            <span class="badge bg-warning text-dark"><?= $jumlah_keranjang ?></span>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'penjual'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="admin/produk.php">Kelola Produk</a></li>
-                <?php endif; ?>
-            </ul>
-            <ul class="navbar-nav">
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><span class="nav-link text-white-50">Halo, <?= htmlspecialchars($_SESSION['nama']) ?></span></li>
-                    <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
-                <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
-                <?php endif; ?>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<div class="container py-4">
+<main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
 
     <?= tampilkan_pesan() ?>
 
     <?php if (!$produk): ?>
-        <!-- Pesan jika produk tidak ditemukan -->
-        <div class="alert alert-warning">
-            Produk tidak ditemukan. Mungkin sudah dihapus atau id salah.
+        <!-- ============ PRODUK TIDAK DITEMUKAN ============ -->
+        <div class="card p-10 text-center">
+            <span class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+                <i data-lucide="package-x" class="h-7 w-7"></i>
+            </span>
+            <h2 class="text-lg font-bold text-slate-800">Produk tidak ditemukan</h2>
+            <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">
+                Produk mungkin sudah dihapus atau id produk tidak valid.
+            </p>
+            <a href="index.php" class="btn-primary mt-5 inline-flex">
+                <i data-lucide="arrow-left" class="h-4 w-4"></i> Kembali ke Beranda
+            </a>
         </div>
-        <a href="index.php" class="btn btn-primary">&larr; Kembali ke Beranda</a>
 
     <?php else:
         $gambar = $produk['gambar'] ? $produk['gambar'] : 'default.png';
+        $habis  = $produk['stok'] <= 0;
     ?>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
-                <li class="breadcrumb-item active"><?= htmlspecialchars($produk['nama_produk']) ?></li>
+        <!-- ============ BREADCRUMB ============ -->
+        <nav aria-label="Breadcrumb" class="mb-5">
+            <ol class="flex flex-wrap items-center gap-1.5 text-sm text-slate-500">
+                <li class="flex items-center gap-1.5">
+                    <a href="index.php" class="transition hover:text-primary-600">Beranda</a>
+                </li>
+                <li aria-hidden="true"><i data-lucide="chevron-right" class="h-3.5 w-3.5 text-slate-300"></i></li>
+                <li class="flex items-center gap-1.5">
+                    <a href="index.php?kategori=<?= (int) $produk['id_kategori'] ?>" class="transition hover:text-primary-600">
+                        <?= htmlspecialchars($produk['nama_kategori']) ?>
+                    </a>
+                </li>
+                <li aria-hidden="true"><i data-lucide="chevron-right" class="h-3.5 w-3.5 text-slate-300"></i></li>
+                <li class="font-medium text-slate-700"><?= htmlspecialchars($produk['nama_produk']) ?></li>
             </ol>
         </nav>
 
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <div class="row g-4">
-                    <!-- GAMBAR PRODUK -->
-                    <div class="col-md-5">
-                        <img src="assets/images/<?= htmlspecialchars($gambar) ?>"
-                             class="img-fluid rounded border" alt="<?= htmlspecialchars($produk['nama_produk']) ?>">
+        <!-- ============ DUA KOLOM: GAMBAR + INFORMASI ============ -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+            <!-- KOLOM KIRI: GAMBAR -->
+            <div class="card h-fit overflow-hidden">
+                <div class="relative bg-slate-100">
+                    <img src="assets/images/<?= htmlspecialchars($gambar) ?>"
+                         alt="<?= htmlspecialchars($produk['nama_produk']) ?>"
+                         class="aspect-[4/3] w-full object-cover">
+                    <span class="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-700 shadow-soft backdrop-blur">
+                        <?= htmlspecialchars($produk['nama_kategori']) ?>
+                    </span>
+                    <?php if ($habis): ?>
+                        <span class="absolute right-3 top-3 rounded-full bg-rose-600 px-3 py-1 text-xs font-bold text-white shadow">STOK HABIS</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN: INFORMASI -->
+            <div class="flex flex-col gap-5">
+                <div class="card p-5 sm:p-6">
+                    <span class="badge-category"><?= htmlspecialchars($produk['nama_kategori']) ?></span>
+
+                    <h1 class="mt-3 text-xl font-extrabold leading-snug text-slate-800 sm:text-2xl">
+                        <?= htmlspecialchars($produk['nama_produk']) ?>
+                    </h1>
+
+                    <div class="mt-3 text-3xl font-extrabold tracking-tight text-primary-700">
+                        <?= format_rupiah($produk['harga']) ?>
                     </div>
 
-                    <!-- INFORMASI PRODUK -->
-                    <div class="col-md-7">
-                        <span class="badge bg-secondary"><?= htmlspecialchars($produk['nama_kategori']) ?></span>
-                        <h3 class="mt-2"><?= htmlspecialchars($produk['nama_produk']) ?></h3>
-                        <div class="fs-3 fw-bold text-primary mb-3"><?= format_rupiah($produk['harga']) ?></div>
-
-                        <table class="table table-sm w-auto">
-                            <tr>
-                                <th class="pe-3">Stok</th>
-                                <td>
-                                    <?php if ($produk['stok'] > 0): ?>
-                                        <span class="text-success"><?= $produk['stok'] ?> tersedia</span>
-                                    <?php else: ?>
-                                        <span class="text-danger">Habis</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th class="pe-3">Status</th>
-                                <td><?= htmlspecialchars(ucfirst($produk['status'])) ?></td>
-                            </tr>
-                            <tr>
-                                <th class="pe-3">Penjual</th>
-                                <td><?= htmlspecialchars($produk['nama_penjual']) ?></td>
-                            </tr>
-                            <tr>
-                                <th class="pe-3">No. HP</th>
-                                <td><?= htmlspecialchars($produk['no_hp_penjual'] ?: '-') ?></td>
-                            </tr>
-                            <tr>
-                                <th class="pe-3">Alamat</th>
-                                <td><?= htmlspecialchars($produk['alamat_penjual'] ?: '-') ?></td>
-                            </tr>
-                        </table>
-
-                        <h6 class="mt-3">Deskripsi</h6>
-                        <p><?= nl2br(htmlspecialchars($produk['deskripsi'])) ?></p>
-
-                        <!-- Tombol tambah ke keranjang -->
-                        <?php if ($produk['status'] === 'aktif' && $produk['stok'] > 0): ?>
-                            <form method="post" action="proses/tambah-keranjang.php" class="row g-2 align-items-end">
-                                <input type="hidden" name="id_produk" value="<?= $produk['id_produk'] ?>">
-                                <input type="hidden" name="redirect" value="detail-produk.php?id=<?= $produk['id_produk'] ?>">
-                                <div class="col-auto">
-                                    <label class="form-label">Jumlah</label>
-                                    <input type="number" name="jumlah" class="form-control"
-                                           value="1" min="1" max="<?= $produk['stok'] ?>" style="width:110px" required>
-                                </div>
-                                <div class="col-auto">
-                                    <button type="submit" class="btn btn-primary">Tambah ke Keranjang</button>
-                                </div>
-                            </form>
+                    <!-- Stok -->
+                    <div class="mt-4 flex items-center gap-2 text-sm">
+                        <span class="text-slate-500">Stok</span>
+                        <?php if ($habis): ?>
+                            <span class="badge-danger"><i data-lucide="x-circle" class="h-3 w-3"></i> Habis</span>
                         <?php else: ?>
-                            <div class="alert alert-secondary mt-3 mb-0">
-                                Produk ini tidak dapat dibeli saat ini.
-                            </div>
+                            <span class="badge-success"><i data-lucide="check-circle-2" class="h-3 w-3"></i> <?= $produk['stok'] ?> tersedia</span>
                         <?php endif; ?>
+                        <span class="badge-slate ml-auto">Status: <?= htmlspecialchars(ucfirst($produk['status'])) ?></span>
+                    </div>
 
-                        <a href="index.php" class="btn btn-outline-secondary mt-3">&larr; Kembali</a>
+                    <hr class="my-5 border-slate-100">
+
+                    <!-- Form beli -->
+                    <?php if ($produk['status'] === 'aktif' && !$habis): ?>
+                        <form method="post" action="proses/tambah-keranjang.php" class="flex flex-wrap items-end gap-3">
+                            <input type="hidden" name="id_produk" value="<?= $produk['id_produk'] ?>">
+                            <input type="hidden" name="redirect" value="detail-produk.php?id=<?= $produk['id_produk'] ?>">
+
+                            <div>
+                                <label for="jumlah" class="label-field">Jumlah</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="jumlah" name="jumlah" value="1"
+                                           min="1" max="<?= $produk['stok'] ?>" required
+                                           class="input-field w-24 text-center font-semibold">
+                                    <span class="text-xs text-slate-500">/ pcs</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary btn-lg flex-1 min-w-[200px]">
+                                <i data-lucide="shopping-cart" class="h-5 w-5"></i> Tambah ke Keranjang
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <div class="alert-warning mb-0">
+                            <i data-lucide="info" class="mt-0.5 h-4 w-4 shrink-0"></i>
+                            <span>Produk ini tidak dapat dibeli saat ini.</span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Info penjual -->
+                <div class="card p-5 sm:p-6">
+                    <h2 class="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+                        <i data-lucide="store" class="h-4 w-4 text-primary-600"></i> Informasi Penjual
+                    </h2>
+                    <div class="flex items-start gap-3">
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-700">
+                            <?= strtoupper(substr($produk['nama_penjual'], 0, 1)) ?>
+                        </span>
+                        <div class="min-w-0 space-y-1.5 text-sm">
+                            <p class="font-semibold text-slate-800"><?= htmlspecialchars($produk['nama_penjual']) ?></p>
+                            <p class="flex items-start gap-2 text-slate-500">
+                                <i data-lucide="phone" class="mt-0.5 h-4 w-4 shrink-0 text-slate-400"></i>
+                                <?= htmlspecialchars($produk['no_hp_penjual'] ?: '-') ?>
+                            </p>
+                            <p class="flex items-start gap-2 text-slate-500">
+                                <i data-lucide="map-pin" class="mt-0.5 h-4 w-4 shrink-0 text-slate-400"></i>
+                                <?= htmlspecialchars($produk['alamat_penjual'] ?: '-') ?>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- ============ DESKRIPSI ============ -->
+        <div class="card mt-6 p-5 sm:p-6">
+            <h2 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+                <i data-lucide="align-left" class="h-4 w-4 text-primary-600"></i> Deskripsi Produk
+            </h2>
+            <div class="max-w-3xl whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                <?= htmlspecialchars($produk['deskripsi']) ?>
+            </div>
+        </div>
+
+        <!-- Kembali -->
+        <div class="mt-6">
+            <a href="index.php" class="btn-outline inline-flex">
+                <i data-lucide="arrow-left" class="h-4 w-4"></i> Kembali ke Beranda
+            </a>
+        </div>
     <?php endif; ?>
-</div>
+</main>
 
-<footer class="bg-dark text-white-50 py-3 mt-4">
-    <div class="container small text-center">
-        &copy; <?= date('Y') ?> Marketplace - Tugas Praktikum Web (Soal 11)
-    </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="assets/js/script.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/components/footer.php'; ?>

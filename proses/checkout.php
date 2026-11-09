@@ -150,89 +150,99 @@ try {
 // 4. Tampilkan halaman pesanan berhasil
 // ------------------------------------------------------------
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pesanan Berhasil - Marketplace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/css/style.css" rel="stylesheet">
-</head>
-<body>
+<?php
+// Komponen tampilan halaman sukses
+$base  = '../';
+$judul = 'Pesanan Berhasil';
+require_once __DIR__ . '/../components/head.php';
+require_once __DIR__ . '/../components/navbar.php';
+?>
 
-<nav class="navbar navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="../index.php">Marketplace</a>
+<!-- ================= HALAMAN PESANAN BERHASIL ================= -->
+<main class="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6">
+
+    <!-- Ikon sukses -->
+    <div class="mb-6 text-center">
+        <span class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+            <i data-lucide="circle-check-big" class="h-10 w-10"></i>
+        </span>
+        <h1 class="text-2xl font-extrabold text-slate-800">Pesanan Berhasil Dibuat!</h1>
+        <p class="mx-auto mt-2 max-w-lg text-sm text-slate-500">
+            Terima kasih, pesanan Anda sudah kami terima dan stok produk telah diperbarui.
+        </p>
     </div>
-</nav>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Pesan keberhasilan pesanan -->
-            <div class="alert alert-success text-center">
-                <h4 class="alert-heading">Pesanan Berhasil Dibuat!</h4>
-                <p class="mb-0">Terima kasih, pesanan Anda sudah kami terima dan stok produk telah diperbarui.</p>
+    <!-- Ringkasan pesanan -->
+    <div class="card overflow-hidden">
+        <!-- Header -->
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4">
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Nomor Pesanan</p>
+                <p class="text-lg font-extrabold text-slate-800">#<?= $id_pesanan ?></p>
+            </div>
+            <span class="badge-warning text-xs"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Status: Menunggu</span>
+        </div>
+
+        <div class="p-5">
+            <!-- Alamat -->
+            <div class="mb-5 rounded-xl border border-slate-200 p-4">
+                <p class="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
+                    <i data-lucide="map-pin" class="h-3.5 w-3.5 text-primary-600"></i> Alamat Pengiriman
+                </p>
+                <p class="text-sm leading-relaxed text-slate-700"><?= nl2br(htmlspecialchars($alamat)) ?></p>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <div class="row mb-3">
-                        <div class="col-sm-6">
-                            <span class="text-muted">Nomor Pesanan</span>
-                            <div class="fw-bold fs-5">#<?= $id_pesanan ?></div>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted">Status</span>
-                            <div><span class="badge bg-warning text-dark">Menunggu</span></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <span class="text-muted">Alamat Pengiriman</span>
-                        <div><?= nl2br(htmlspecialchars($alamat)) ?></div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Produk</th>
-                                    <th class="text-center">Jumlah</th>
-                                    <th>Harga</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($item as $baris): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($baris['nama_produk']) ?></td>
-                                        <td class="text-center"><?= $baris['jumlah'] ?></td>
-                                        <td><?= format_rupiah($baris['harga']) ?></td>
-                                        <td><?= format_rupiah($baris['jumlah'] * $baris['harga']) ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                            <tfoot>
-                                <tr class="table-dark">
-                                    <th colspan="3" class="text-end">Total Belanja</th>
-                                    <th><?= format_rupiah($total) ?></th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="../index.php" class="btn btn-primary">Kembali ke Beranda</a>
-                        <a href="../keranjang.php" class="btn btn-outline-secondary">Lihat Keranjang</a>
-                    </div>
-                </div>
+            <!-- Tabel rincian -->
+            <div class="overflow-x-auto">
+                <table class="tabel-data min-w-[520px]">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th class="text-center">Jumlah</th>
+                            <th class="text-right">Harga</th>
+                            <th class="text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($item as $baris): ?>
+                            <tr>
+                                <td class="font-medium text-slate-800"><?= htmlspecialchars($baris['nama_produk']) ?></td>
+                                <td class="text-center"><?= $baris['jumlah'] ?></td>
+                                <td class="text-right"><?= format_rupiah($baris['harga']) ?></td>
+                                <td class="text-right font-semibold"><?= format_rupiah($baris['jumlah'] * $baris['harga']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="border-b-0 px-4 py-3 text-right text-sm font-bold uppercase tracking-wide text-slate-500">
+                                Total Belanja
+                            </th>
+                            <td class="border-b-0 px-4 py-3 text-right text-lg font-extrabold text-primary-700">
+                                <?= format_rupiah($total) ?>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
+
+            <!-- Aksi -->
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+                <a href="../index.php" class="btn-primary">
+                    <i data-lucide="store" class="h-4 w-4"></i> Kembali ke Beranda
+                </a>
+                <a href="../keranjang.php" class="btn-outline">
+                    <i data-lucide="shopping-cart" class="h-4 w-4"></i> Lihat Keranjang
+                </a>
+            </div>
+
+            <p class="mt-5 flex items-start justify-center gap-2 text-xs text-slate-400">
+                <i data-lucide="shield-check" class="mt-0.5 h-4 w-4 shrink-0 text-primary-500"></i>
+                Data pesanan tersimpan di tabel <span class="font-mono font-semibold text-slate-500">pesanan</span> dan
+                <span class="font-mono font-semibold text-slate-500">detail_pesanan</span>.
+            </p>
         </div>
     </div>
-</div>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../components/footer.php'; ?>

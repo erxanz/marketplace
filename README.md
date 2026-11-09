@@ -1,6 +1,6 @@
 # Marketplace - Aplikasi Web Sederhana (Soal 11)
 
-Aplikasi marketplace sederhana dibuat dengan **PHP Native (tanpa framework)**, **MySQL via MySQLi**, dan **Bootstrap 5**. Dibuat untuk tugas praktikum mata kuliah Web.
+Aplikasi marketplace sederhana dibuat dengan **PHP Native (tanpa framework)**, **MySQL via MySQLi**, dan **Tailwind CSS** (desain modern ala marketplace e-commerce, menggantikan Bootstrap 5).
 
 Fitur utama:
 
@@ -17,7 +17,7 @@ Fitur utama:
 |---|---|
 | XAMPP | Apache + MySQL (MariaDB) + PHP 8.x |
 | PHP | Minimal 7.4, direkomendasikan 8.x (ext `mysqli`) |
-| Browser | Chrome / Firefox / Edge (tersambung internet untuk CDN Bootstrap) |
+| Browser | Chrome / Firefox / Edge (tersambung internet untuk CDN Lucide & Google Fonts) |
 
 ---
 
@@ -32,6 +32,23 @@ Fitur utama:
 5. Buka aplikasi: `http://localhost/marketplace/`
 
 > Koneksi database ada di `config/koneksi.php` (host `localhost`, user `root`, password kosong — default XAMPP).
+
+### Build Tailwind CSS (development)
+
+Styling memakai Tailwind CSS yang dikompilasi ke `assets/css/output.css`.
+`output.css` sudah ikut tersedia di repo, jadi **langkah ini hanya perlu saat mengubah style**.
+
+```bash
+npm install          # sekali saja: mengunduh tailwindcss (dev dependency)
+npm run build        # kompilasi assets/css/src/input.css -> assets/css/output.css --minify
+npm run dev          # mode watch (auto rebuild saat file PHP/CSS berubah)
+```
+
+Ketentuan:
+
+- Konfigurasi ada di `tailwind.config.js`; folder `content` & `safelist` mendeteksi seluruh file PHP.
+- Hasil build (`assets/css/output.css`) wajib ikut dideploy (mis. InfinityFree) — **jangan** pakai Tailwind Play CDN.
+- Font Inter (Google Fonts) dimuat via `@import` di `input.css`; ikon memakai Lucide (CDN).
 
 ---
 
@@ -48,6 +65,8 @@ Data akun sudah tersedia di tabel `users` (password sudah di-hash dengan `passwo
 
 Halaman login: `http://localhost/marketplace/login.php`
 
+Belum punya akun? Buka `http://localhost/marketplace/register.php` — daftar sebagai **pembeli** atau **penjual**.
+
 ---
 
 ## 4. Struktur Folder
@@ -57,27 +76,40 @@ marketplace/
 ├── config/
 │   ├── koneksi.php        # Koneksi database MySQLi
 │   └── fungsi.php         # Fungsi bantu (login, rupiah, upload, pesan)
+├── components/            # Komponen tampilan yang dipakai bersama
+│   ├── head.php           # <head> + buka <body>
+│   ├── navbar.php         # Navbar depan (logo, search, keranjang, auth)
+│   ├── footer.php         # Footer depan + memuat script global
+│   ├── sidebar-admin.php  # Sidebar admin/penjual (responsif)
+│   ├── topbar-admin.php   # Header atas halaman admin
+│   └── scripts.php        # Lucide icons + app.js
 ├── admin/
-│   ├── produk.php         # Daftar produk (CRUD)
+│   ├── produk.php         # Dashboard: statistik + daftar produk (CRUD)
 │   ├── tambah-produk.php  # Form tambah produk + upload gambar
 │   ├── edit-produk.php    # Form ubah produk
 │   └── hapus-produk.php   # Konfirmasi & hapus produk
 ├── assets/
-│   ├── css/style.css      # Gaya tambahan
-│   ├── js/script.js       # Script kecil (auto-dismiss pesan)
+│   ├── css/
+│   │   ├── src/input.css  # Sumber Tailwind (diubah saat develop)
+│   │   └── output.css     # Hasil build (dipakai halaman) - jangan diedit
+│   ├── js/app.js          # Toggle menu, ikon Lucide, auto-dismiss pesan
 │   └── images/            # Gambar produk & gambar default
 ├── proses/
 │   ├── tambah-keranjang.php  # Proses POST masukkan produk ke keranjang
 │   └── checkout.php          # Proses checkout (transaksi database)
-├── index.php              # Beranda: daftar produk aktif
-├── detail-produk.php      # Detail satu produk
-├── keranjang.php          # Isi keranjang + form checkout
+├── index.php              # Beranda: hero, filter kategori, pencarian, produk
+├── detail-produk.php      # Detail satu produk (layout 2 kolom)
+├── keranjang.php          # Keranjang + order summary + checkout
 ├── login.php              # Halaman login
+├── register.php           # Halaman daftar akun (baru)
 ├── logout.php             # Proses logout
-└── db_marketplace.sql     # Struktur database + data awal
+├── db_marketplace.sql     # Struktur database + data awal
+├── package.json           # Script build Tailwind (npm run build)
+├── tailwind.config.js     # Konfigurasi Tailwind (content + safelist)
+└── README.md
 ```
 
-> Catatan: `login.php`, `logout.php`, dan `config/fungsi.php` adalah file tambahan yang dibutuhkan untuk sistem autentikasi dan bersama fungsi bantu; struktur utama sesuai soal tidak diubah.
+> Catatan: `login.php`, `logout.php`, `register.php`, `config/fungsi.php`, dan folder `components/` adalah file tambahan untuk autentikasi, register, dan komponen UI bersama; struktur utama sesuai soal tidak diubah. `assets/css/style.css` dan `assets/js/script.js` versi lama (Bootstrap) sudah digantikan oleh `input.css`/`output.css` dan `app.js`.
 
 ---
 
@@ -109,12 +141,13 @@ Alur checkout:
 ## 6. Cara Menggunakan
 
 ### A. Sebagai Pembeli
-1. Login menggunakan akun pembeli (atau buka beranda langsung untuk melihat produk).
-2. Klik **Detail Produk** untuk melihat deskripsi, stok, dan penjual.
-3. Klik **Tambah ke Keranjang** (wajib login — jika belum, otomatis diarahkan ke halaman login).
-4. Buka **Keranjang**, ubah jumlah atau hapus item sesuai kebutuhan.
-5. Isi **Alamat Pengiriman** → klik **Checkout Sekarang**.
-6. Halaman "Pesanan Berhasil" menampilkan nomor pesanan, rincian, dan total belanja.
+1. **Cari & filter**: ketik kata kunci pada search bar di navbar, atau klik chips **Kategori** di beranda untuk memfilter produk.
+2. **Daftar/Login** melalui tombol di navbar (`register.php` / `login.php`).
+3. Klik **Detail Produk** untuk melihat deskripsi, stok, dan penjual.
+4. Klik **Tambah ke Keranjang** (wajib login — jika belum, otomatis diarahkan ke halaman login).
+5. Buka **Keranjang**, ubah jumlah atau hapus item sesuai kebutuhan (ringkasan pesanan ada di sisi kanan).
+6. Isi **Alamat Pengiriman** → klik **Checkout Sekarang**.
+7. Halaman "Pesanan Berhasil" menampilkan nomor pesanan, rincian, dan total belanja.
 
 ### B. Sebagai Penjual / Admin
 1. Login menggunakan akun penjual atau admin.
@@ -166,4 +199,4 @@ Pemeriksaan keamanan yang sudah diterapkan:
 | Gambar produk tidak tampil | Pastikan folder `assets/images/` bisa ditulis (writable) |
 | Upload gambar gagal | Format harus JPG/PNG/WEBP, ukuran maksimal 2 MB |
 | Tabel tidak ditemukan | Import ulang `db_marketplace.sql` lewat phpMyAdmin |
-| Layout tidak rapi (tanpa Bootstrap) | Pastikan perangkat tersambung internet (Bootstrap diambil dari CDN) |
+| Layout tidak rapi / class aneh | Jalankan ulang `npm run build` (class baru harus ikut ter-compile ke `output.css`) |

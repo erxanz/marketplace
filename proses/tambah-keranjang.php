@@ -32,9 +32,10 @@ if ($jumlah < 1) {
 // ------------------------------------------------------------
 // Tentukan halaman tujuan setelah proses (dicek supaya aman,
 // tidak boleh berupa URL lengkap dari luar aplikasi)
+// index.php dibolehkan dengan query pencarian/kategori
 // ------------------------------------------------------------
 $redirect = $_POST['redirect'] ?? 'index.php';
-if (!preg_match('#^(index\.php|keranjang\.php|detail-produk\.php\?id=\d+)$#', $redirect)) {
+if (!preg_match('#^(index\.php(\?[A-Za-z0-9=&%_.\-]*)?|keranjang\.php|detail-produk\.php\?id=\d+)$#', $redirect)) {
     $redirect = 'index.php';
 }
 // Karena file ini berada di folder proses/, path tujuan diberi awalan ../

@@ -3,6 +3,7 @@
 // FILE: login.php
 // Fungsi : Halaman login untuk admin, penjual, dan pembeli
 //          Password diverifikasi dengan password_verify()
+//          (logika autentikasi tidak berubah)
 // ============================================================
 session_start();
 require_once 'config/koneksi.php';
@@ -27,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validasi input sederhana
     if ($email === '' || $password === '') {
-        $pesan = '<div class="alert alert-danger">Email dan password wajib diisi.</div>';
+        $pesan = '<div class="alert-danger">Email dan password wajib diisi.</div>';
     } else {
         // Cari user berdasarkan email (prepared statement)
         $sql  = "SELECT id_user, nama, password, role FROM users WHERE email = ?";
@@ -52,62 +53,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             exit;
         } else {
-            $pesan = '<div class="alert alert-danger">Email atau password salah.</div>';
+            $pesan = '<div class="alert-danger">Email atau password salah.</div>';
         }
     }
 }
+
+$base  = '';
+$judul = 'Login';
+require_once __DIR__ . '/components/head.php';
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Marketplace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
-</head>
-<body class="bg-light">
 
-<div class="container">
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-5 col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h4 class="card-title text-center mb-1">Login Marketplace</h4>
-                    <p class="text-center text-muted small mb-4">Silakan login menggunakan akun Anda</p>
+<!-- ================= HALAMAN AUTH ================= -->
+<main class="flex flex-1 items-center justify-center bg-gradient-to-b from-primary-50 via-slate-50 to-slate-50 px-4 py-10">
 
-                    <?= tampilkan_pesan() ?>
-                    <?= $pesan ?>
+    <div class="w-full max-w-md">
 
-                    <form method="post" action="login.php">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                   value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required autofocus>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                    </form>
+        <!-- Logo -->
+        <a href="index.php" class="mb-6 flex items-center justify-center gap-2">
+            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-600 text-white shadow-btn-primary">
+                <i data-lucide="shopping-bag" class="h-6 w-6"></i>
+            </span>
+            <span class="text-2xl font-extrabold tracking-tight text-slate-800">
+                Market<span class="text-primary-600">place</span>
+            </span>
+        </a>
 
-                    <div class="mt-3 small text-muted">
-                        <div class="fw-semibold mb-1">Akun demo:</div>
-                        <div>Admin: admin@marketplace.test / admin123</div>
-                        <div>Penjual: budi@marketplace.test / penjual123</div>
-                        <div>Pembeli: siti@marketplace.test / pembeli123</div>
-                    </div>
+        <!-- Kartu login -->
+        <div class="card p-6 sm:p-8">
+            <div class="mb-6 text-center">
+                <h1 class="text-xl font-extrabold text-slate-800">Selamat Datang Kembali</h1>
+                <p class="mt-1 text-sm text-slate-500">Silakan login menggunakan akun Anda</p>
+            </div>
 
-                    <div class="mt-3 text-center">
-                        <a href="index.php">&larr; Kembali ke beranda</a>
+            <?= tampilkan_pesan() ?>
+            <?= $pesan ?>
+
+            <form method="post" action="login.php" class="space-y-4">
+                <!-- Email -->
+                <div>
+                    <label for="email" class="label-field">Email</label>
+                    <div class="relative">
+                        <i data-lucide="mail" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+                        <input type="email" id="email" name="email" required autofocus
+                               placeholder="nama@email.com"
+                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                               class="input-with-icon">
                     </div>
                 </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="label-field">Password</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+                        <input type="password" id="password" name="password" required
+                               placeholder="Masukkan password"
+                               class="input-with-icon">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary btn-block btn-lg">
+                    <i data-lucide="log-in" class="h-4 w-4"></i> Login
+                </button>
+            </form>
+
+            <p class="mt-5 text-center text-sm text-slate-500">
+                Belum punya akun?
+                <a href="register.php" class="font-semibold text-primary-600 transition hover:text-primary-700">Daftar sekarang</a>
+            </p>
+
+            <!-- Akun demo -->
+            <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <i data-lucide="key-round" class="h-3.5 w-3.5"></i> Akun Demo
+                </p>
+                <ul class="space-y-1.5 text-xs text-slate-600">
+                    <li class="flex items-center justify-between gap-2">
+                        <span><span class="badge-slate mr-1.5">Admin</span> admin@marketplace.test</span>
+                        <code class="font-mono font-semibold">admin123</code>
+                    </li>
+                    <li class="flex items-center justify-between gap-2">
+                        <span><span class="badge-slate mr-1.5">Penjual</span> budi@marketplace.test</span>
+                        <code class="font-mono font-semibold">penjual123</code>
+                    </li>
+                    <li class="flex items-center justify-between gap-2">
+                        <span><span class="badge-slate mr-1.5">Pembeli</span> siti@marketplace.test</span>
+                        <code class="font-mono font-semibold">pembeli123</code>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+        <p class="mt-6 text-center text-sm">
+            <a href="index.php" class="inline-flex items-center gap-1.5 font-medium text-slate-500 transition hover:text-primary-600">
+                <i data-lucide="arrow-left" class="h-4 w-4"></i> Kembali ke beranda
+            </a>
+        </p>
+    </div>
+</main>
+
+<?php require_once __DIR__ . '/components/scripts.php'; ?>

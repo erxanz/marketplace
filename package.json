@@ -1,0 +1,13 @@
+{
+  "name": "marketplace-ui",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Build script Tailwind CSS untuk aplikasi Marketplace",
+  "scripts": {
+    "build": "tailwindcss -i ./assets/css/src/input.css -o ./assets/css/output.css --minify",
+    "dev": "tailwindcss -i ./assets/css/src/input.css -o ./assets/css/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

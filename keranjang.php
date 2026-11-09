@@ -4,6 +4,7 @@
 // Fungsi : Menampilkan isi keranjang belanja pembeli.
 //          Bisa mengubah jumlah, menghapus item,
 //          dan menyediakan form checkout (alamat pengiriman).
+//          (logika PHP tidak berubah dari versi asli)
 // ============================================================
 session_start();
 require_once 'config/koneksi.php';
@@ -18,11 +19,10 @@ $id_user = $_SESSION['user_id'];
 // 1. PROSES ubah jumlah / hapus item (metode POST)
 // ------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $aksi       = $_POST['aksi'] ?? '';
-    $id_detail  = isset($_POST['id_detail_keranjang']) ? (int) $_POST['id_detail_keranjang'] : 0;
+    $aksi      = $_POST['aksi'] ?? '';
+    $id_detail = isset($_POST['id_detail_keranjang']) ? (int) $_POST['id_detail_keranjang'] : 0;
 
     // Pastikan baris keranjang benar milik user yang login
-    // (mencegah user lain mengubah keranjang orang lain)
     $sql = "SELECT d.id_detail_keranjang, d.jumlah, p.stok
             FROM detail_keranjang d
             JOIN keranjang k ON d.id_keranjang = k.id_keranjang
@@ -44,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($aksi === 'ubah_jumlah') {
         $jumlah = isset($_POST['jumlah']) ? (int) $_POST['jumlah'] : 0;
 
-        // Validasi jumlah dan stok
         if ($jumlah < 1) {
             header("Location: keranjang.php?pesan=jumlah-invalid");
             exit;
@@ -94,9 +93,11 @@ $hasil_keranjang = mysqli_stmt_get_result($stmt);
 
 $daftar_item = [];
 $total = 0;
+$total_jumlah = 0;
 while ($baris = mysqli_fetch_assoc($hasil_keranjang)) {
     $daftar_item[] = $baris;
     $total += $baris['jumlah'] * $baris['harga'];
+    $total_jumlah += $baris['jumlah'];
 }
 
 // Ambil alamat user untuk diisikan otomatis pada form checkout
@@ -106,167 +107,161 @@ mysqli_stmt_execute($stmt);
 $hasil_user = mysqli_stmt_get_result($stmt);
 $user = mysqli_fetch_assoc($hasil_user);
 
-$jumlah_keranjang = jumlah_keranjang($koneksi);
+$base = '';
+$judul = 'Keranjang Belanja';
+require_once __DIR__ . '/components/head.php';
+require_once __DIR__ . '/components/navbar.php';
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Keranjang Belanja - Marketplace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
-</head>
-<body>
 
-<!-- ================= NAVBAR ================= -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="index.php">Marketplace</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="menuNavbar">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Beranda</a></li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="keranjang.php">
-                        Keranjang
-                        <?php if ($jumlah_keranjang > 0): ?>
-                            <span class="badge bg-warning text-dark"><?= $jumlah_keranjang ?></span>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'penjual'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="admin/produk.php">Kelola Produk</a></li>
-                <?php endif; ?>
-            </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item"><span class="nav-link text-white-50">Halo, <?= htmlspecialchars($_SESSION['nama']) ?></span></li>
-                <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
-            </ul>
+<main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+
+    <!-- Judul halaman -->
+    <div class="mb-5 flex items-center gap-3">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 text-primary-700">
+            <i data-lucide="shopping-cart" class="h-5 w-5"></i>
+        </span>
+        <div>
+            <h1 class="text-xl font-extrabold text-slate-800">Keranjang Belanja</h1>
+            <p class="text-sm text-slate-500"><?= count($daftar_item) ?> produk di keranjang Anda</p>
         </div>
     </div>
-</nav>
-
-<div class="container py-4">
-    <h4 class="mb-3">Keranjang Belanja</h4>
 
     <?= tampilkan_pesan() ?>
 
     <?php if (empty($daftar_item)): ?>
-        <!-- Keranjang kosong -->
-        <div class="alert alert-info">
-            Keranjang Anda masih kosong.
-            <a href="index.php">Belanja sekarang</a>
+        <!-- ============ EMPTY STATE ============ -->
+        <div class="card p-10 text-center">
+            <span class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                <i data-lucide="shopping-basket" class="h-8 w-8"></i>
+            </span>
+            <h2 class="text-lg font-bold text-slate-800">Keranjang masih kosong</h2>
+            <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">
+                Yuk pilih produk favoritmu dan tambahkan ke keranjang belanja.
+            </p>
+            <a href="index.php" class="btn-primary mt-5 inline-flex">
+                <i data-lucide="store" class="h-4 w-4"></i> Mulai Belanja
+            </a>
         </div>
 
     <?php else: ?>
-        <div class="row g-4">
-            <!-- ================= DAFTAR ITEM ================= -->
-            <div class="col-lg-8">
-                <div class="card shadow-sm">
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Produk</th>
-                                    <th>Harga</th>
-                                    <th>Jumlah</th>
-                                    <th>Subtotal</th>
-                                    <th class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($daftar_item as $item):
-                                    $gambar = $item['gambar'] ? $item['gambar'] : 'default.png';
-                                    $subtotal = $item['jumlah'] * $item['harga'];
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <img src="assets/images/<?= htmlspecialchars($gambar) ?>"
-                                                     class="table-gambar" alt="<?= htmlspecialchars($item['nama_produk']) ?>">
-                                                <div>
-                                                    <?= htmlspecialchars($item['nama_produk']) ?>
-                                                    <?php if ($item['jumlah'] > $item['stok']): ?>
-                                                        <br><small class="text-danger">Stok tidak mencukupi (sisa <?= $item['stok'] ?>)</small>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><?= format_rupiah($item['harga']) ?></td>
-                                        <td>
-                                            <!-- Form ubah jumlah -->
-                                            <form method="post" action="keranjang.php" class="d-flex gap-1">
-                                                <input type="hidden" name="aksi" value="ubah_jumlah">
-                                                <input type="hidden" name="id_detail_keranjang" value="<?= $item['id_detail_keranjang'] ?>">
-                                                <input type="number" name="jumlah" class="form-control form-control-sm input-jumlah"
-                                                       value="<?= $item['jumlah'] ?>" min="1" max="<?= $item['stok'] ?>" required>
-                                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Ubah jumlah">OK</button>
-                                            </form>
-                                        </td>
-                                        <td class="fw-semibold"><?= format_rupiah($subtotal) ?></td>
-                                        <td class="text-center">
-                                            <!-- Tombol hapus item -->
-                                            <form method="post" action="keranjang.php"
-                                                  onsubmit="return confirm('Hapus produk ini dari keranjang?');">
-                                                <input type="hidden" name="aksi" value="hapus">
-                                                <input type="hidden" name="id_detail_keranjang" value="<?= $item['id_detail_keranjang'] ?>">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+            <!-- ============ KOLOM KIRI: DAFTAR PRODUK ============ -->
+            <div class="space-y-4 lg:col-span-2">
+                <?php foreach ($daftar_item as $item):
+                    $gambar   = $item['gambar'] ? $item['gambar'] : 'default.png';
+                    $subtotal = $item['jumlah'] * $item['harga'];
+                    $melebihi = $item['jumlah'] > $item['stok'];
+                ?>
+                    <div class="card p-4 sm:p-5">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                            <!-- Gambar + nama -->
+                            <div class="flex flex-1 items-center gap-3">
+                                <a href="detail-produk.php?id=<?= $item['id_produk'] ?>" class="shrink-0">
+                                    <img src="assets/images/<?= htmlspecialchars($gambar) ?>"
+                                         alt="<?= htmlspecialchars($item['nama_produk']) ?>"
+                                         class="img-thumb h-16 w-16">
+                                </a>
+                                <div class="min-w-0">
+                                    <a href="detail-produk.php?id=<?= $item['id_produk'] ?>"
+                                       class="line-clamp-2 text-sm font-semibold text-slate-800 transition hover:text-primary-600">
+                                        <?= htmlspecialchars($item['nama_produk']) ?>
+                                    </a>
+                                    <p class="mt-1 text-sm font-bold text-primary-700"><?= format_rupiah($item['harga']) ?></p>
+                                    <?php if ($melebihi): ?>
+                                        <p class="mt-1 flex items-center gap-1 text-xs font-medium text-rose-600">
+                                            <i data-lucide="triangle-alert" class="h-3.5 w-3.5"></i>
+                                            Stok tidak mencukupi (sisa <?= $item['stok'] ?>)
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <!-- Pengaturan jumlah -->
+                            <div class="flex items-center justify-between gap-4 sm:justify-end">
+                                <form method="post" action="keranjang.php" class="flex items-center gap-2">
+                                    <input type="hidden" name="aksi" value="ubah_jumlah">
+                                    <input type="hidden" name="id_detail_keranjang" value="<?= $item['id_detail_keranjang'] ?>">
+                                    <div class="flex items-center rounded-xl border border-slate-200 bg-white">
+                                        <input type="number" name="jumlah"
+                                               value="<?= $item['jumlah'] ?>" min="1" max="<?= $item['stok'] ?>"
+                                               required aria-label="Jumlah"
+                                               class="w-16 rounded-xl border-0 bg-transparent py-2 text-center text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                        <button type="submit" class="border-l border-slate-200 px-2.5 py-2 text-slate-500 transition hover:bg-primary-50 hover:text-primary-700" title="Perbarui jumlah">
+                                            <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <!-- Subtotal -->
+                                <div class="w-32 text-right">
+                                    <p class="text-[11px] uppercase tracking-wide text-slate-400">Subtotal</p>
+                                    <p class="text-sm font-extrabold text-slate-800"><?= format_rupiah($subtotal) ?></p>
+                                </div>
+
+                                <!-- Hapus -->
+                                <form method="post" action="keranjang.php"
+                                      onsubmit="return confirm('Hapus produk ini dari keranjang?');">
+                                    <input type="hidden" name="aksi" value="hapus">
+                                    <input type="hidden" name="id_detail_keranjang" value="<?= $item['id_detail_keranjang'] ?>">
+                                    <button type="submit" class="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                                            title="Hapus dari keranjang" aria-label="Hapus produk">
+                                        <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php endforeach; ?>
+
+                <a href="index.php" class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 transition hover:text-primary-700">
+                    <i data-lucide="arrow-left" class="h-4 w-4"></i> Lanjut belanja
+                </a>
             </div>
 
-            <!-- ================= RINGKASAN + CHECKOUT ================= -->
-            <div class="col-lg-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h6 class="card-title">Ringkasan Belanja</h6>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Jumlah produk</span>
-                            <span><?= $jumlah_keranjang ?> barang</span>
+            <!-- ============ KOLOM KANAN: ORDER SUMMARY ============ -->
+            <div class="lg:col-span-1">
+                <div class="card sticky top-24 p-5">
+                    <h2 class="mb-4 flex items-center gap-2 text-base font-bold text-slate-800">
+                        <i data-lucide="receipt-text" class="h-5 w-5 text-primary-600"></i> Ringkasan Belanja
+                    </h2>
+
+                    <dl class="space-y-2.5 text-sm">
+                        <div class="flex items-center justify-between">
+                            <dt class="text-slate-500">Jumlah produk</dt>
+                            <dd class="font-semibold text-slate-700"><?= $total_jumlah ?> barang</dd>
                         </div>
-                        <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2">
-                            <span>Total</span>
-                            <span class="text-primary"><?= format_rupiah($total) ?></span>
+                        <div class="flex items-center justify-between">
+                            <dt class="text-slate-500">Total belanja</dt>
+                            <dd class="text-lg font-extrabold text-primary-700"><?= format_rupiah($total) ?></dd>
                         </div>
+                    </dl>
 
-                        <hr>
+                    <hr class="my-4 border-slate-100">
 
-                        <!-- Form checkout: alamat pengiriman dikirim ke proses/checkout.php -->
-                        <form method="post" action="proses/checkout.php">
-                            <div class="mb-3">
-                                <label for="alamat_pengiriman" class="form-label">Alamat Pengiriman</label>
-                                <textarea class="form-control" id="alamat_pengiriman" name="alamat_pengiriman"
-                                          rows="3" required placeholder="Masukkan alamat lengkap pengiriman"><?= htmlspecialchars($user['alamat'] ?? '') ?></textarea>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-success btn-lg">Checkout Sekarang</button>
-                            </div>
-                        </form>
+                    <!-- Form checkout -->
+                    <form method="post" action="proses/checkout.php">
+                        <label for="alamat_pengiriman" class="label-field">Alamat Pengiriman</label>
+                        <textarea id="alamat_pengiriman" name="alamat_pengiriman" rows="3" required
+                                  placeholder="Masukkan alamat lengkap pengiriman"
+                                  class="input-field mb-4 resize-none"><?= htmlspecialchars($user['alamat'] ?? '') ?></textarea>
 
-                        <a href="index.php" class="btn btn-outline-secondary w-100 mt-2">Lanjut Belanja</a>
-                    </div>
+                        <button type="submit" class="btn-primary btn-block btn-lg">
+                            <i data-lucide="credit-card" class="h-5 w-5"></i> Checkout Sekarang
+                        </button>
+                    </form>
+
+                    <a href="index.php" class="btn-outline btn-block mt-2">Lanjut Belanja</a>
+
+                    <p class="mt-4 flex items-start gap-2 text-xs text-slate-400">
+                        <i data-lucide="shield-check" class="mt-0.5 h-4 w-4 shrink-0 text-primary-500"></i>
+                        Transaksi aman. Stok produk dicek ulang saat checkout.
+                    </p>
                 </div>
             </div>
         </div>
     <?php endif; ?>
-</div>
+</main>
 
-<footer class="bg-dark text-white-50 py-3 mt-4">
-    <div class="container small text-center">
-        &copy; <?= date('Y') ?> Marketplace - Tugas Praktikum Web (Soal 11)
-    </div>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="assets/js/script.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/components/footer.php'; ?>

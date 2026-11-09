@@ -1,9 +1,9 @@
 <?php
 // ============================================================
 // FILE: admin/produk.php
-// Fungsi : Menampilkan daftar semua produk (CRUD produk).
-//          Hanya admin dan penjual yang boleh membuka halaman ini.
-//          Penjual hanya melihat produk miliknya sendiri.
+// Fungsi : Dashboard kelola produk (daftar produk + statistik).
+//          Hanya admin dan penjual. Penjual hanya melihat
+//          produk miliknya sendiri. (query tidak berubah)
 // ============================================================
 session_start();
 require_once '../config/koneksi.php';
@@ -34,103 +34,171 @@ if ($_SESSION['role'] === 'admin') {
 }
 mysqli_stmt_execute($stmt);
 $hasil = mysqli_stmt_get_result($stmt);
+
+// Simpan semua baris ke array (untuk tabel + statistik)
+$daftar_produk = [];
+while ($baris = mysqli_fetch_assoc($hasil)) {
+    $daftar_produk[] = $baris;
+}
+
+// Statistik dari data yang sama (tanpa query tambahan)
+$total_produk = count($daftar_produk);
+$aktif        = 0;
+$nonaktif     = 0;
+$total_stok   = 0;
+foreach ($daftar_produk as $p) {
+    if ($p['status'] === 'aktif') { $aktif++; } else { $nonaktif++; }
+    $total_stok += (int) $p['stok'];
+}
+
+$base       = '../';
+$judul      = 'Kelola Produk';
+$menu_aktif = 'produk';
+require_once __DIR__ . '/../components/head.php';
+require_once __DIR__ . '/../components/sidebar-admin.php';
+require_once __DIR__ . '/../components/topbar-admin.php';
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kelola Produk - Marketplace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/css/style.css" rel="stylesheet">
-</head>
-<body>
 
-<!-- ================= NAVBAR ================= -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="../index.php">Marketplace</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="menuNavbar">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="../index.php">Beranda</a></li>
-                <li class="nav-item"><a class="nav-link" href="../keranjang.php">Keranjang</a></li>
-                <li class="nav-item"><a class="nav-link active" href="produk.php">Kelola Produk</a></li>
-            </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item"><span class="nav-link text-white-50">Halo, <?= htmlspecialchars($_SESSION['nama']) ?> (<?= htmlspecialchars($_SESSION['role']) ?>)</span></li>
-                <li class="nav-item"><a class="nav-link" href="../logout.php">Logout</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h4 class="mb-0">Kelola Produk</h4>
-        <a href="tambah-produk.php" class="btn btn-success">+ Tambah Produk</a>
-    </div>
+<main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
 
     <?= tampilkan_pesan() ?>
 
-    <div class="card shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-striped align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Gambar</th>
-                        <th>Nama Produk</th>
-                        <th>Kategori</th>
-                        <th>Harga</th>
-                        <th>Stok</th>
-                        <th>Status</th>
-                        <th class="text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (mysqli_num_rows($hasil) === 0): ?>
+    <!-- ================= STATISTIK ================= -->
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <!-- Total produk -->
+        <div class="card flex items-center gap-4 p-5">
+            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-100 text-primary-700">
+                <i data-lucide="package" class="h-5 w-5"></i>
+            </span>
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Total Produk</p>
+                <p class="text-2xl font-extrabold text-slate-800"><?= $total_produk ?></p>
+            </div>
+        </div>
+        <!-- Aktif -->
+        <div class="card flex items-center gap-4 p-5">
+            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                <i data-lucide="circle-check" class="h-5 w-5"></i>
+            </span>
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Produk Aktif</p>
+                <p class="text-2xl font-extrabold text-slate-800"><?= $aktif ?></p>
+            </div>
+        </div>
+        <!-- Nonaktif -->
+        <div class="card flex items-center gap-4 p-5">
+            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <i data-lucide="circle-pause" class="h-5 w-5"></i>
+            </span>
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Nonaktif</p>
+                <p class="text-2xl font-extrabold text-slate-800"><?= $nonaktif ?></p>
+            </div>
+        </div>
+        <!-- Stok -->
+        <div class="card flex items-center gap-4 p-5">
+            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                <i data-lucide="boxes" class="h-5 w-5"></i>
+            </span>
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Total Stok</p>
+                <p class="text-2xl font-extrabold text-slate-800"><?= $total_stok ?></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TABEL PRODUK ================= -->
+    <div class="card overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+            <div>
+                <h2 class="text-base font-bold text-slate-800">Daftar Produk</h2>
+                <p class="text-xs text-slate-500">
+                    <?= $_SESSION['role'] === 'admin' ? 'Semua produk di marketplace' : 'Produk milik Anda' ?>
+                    &middot; <?= $total_produk ?> data
+                </p>
+            </div>
+            <a href="tambah-produk.php" class="btn-primary btn-sm">
+                <i data-lucide="plus" class="h-4 w-4"></i> Tambah Produk
+            </a>
+        </div>
+
+        <?php if ($total_produk === 0): ?>
+            <!-- Empty state -->
+            <div class="p-10 text-center">
+                <span class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                    <i data-lucide="package-plus" class="h-7 w-7"></i>
+                </span>
+                <p class="font-semibold text-slate-700">Belum ada produk</p>
+                <p class="mt-1 text-sm text-slate-500">Mulai tambahkan produk pertama Anda.</p>
+                <a href="tambah-produk.php" class="btn-primary mt-4 inline-flex">
+                    <i data-lucide="plus" class="h-4 w-4"></i> Tambah Produk
+                </a>
+            </div>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="tabel-data min-w-[760px]">
+                    <thead>
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">Belum ada produk.</td>
+                            <th>Produk</th>
+                            <th>Kategori</th>
+                            <th>Harga</th>
+                            <th>Stok</th>
+                            <th>Status</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
-                    <?php else: ?>
-                        <?php while ($p = mysqli_fetch_assoc($hasil)):
+                    </thead>
+                    <tbody>
+                        <?php foreach ($daftar_produk as $p):
                             $gambar = $p['gambar'] ? $p['gambar'] : 'default.png';
                         ?>
                             <tr>
                                 <td>
-                                    <img src="../assets/images/<?= htmlspecialchars($gambar) ?>"
-                                         class="table-gambar" alt="<?= htmlspecialchars($p['nama_produk']) ?>">
+                                    <div class="flex items-center gap-3">
+                                        <img src="../assets/images/<?= htmlspecialchars($gambar) ?>"
+                                             alt="<?= htmlspecialchars($p['nama_produk']) ?>" class="img-thumb">
+                                        <div class="min-w-0">
+                                            <p class="max-w-[240px] truncate font-semibold text-slate-800">
+                                                <?= htmlspecialchars($p['nama_produk']) ?>
+                                            </p>
+                                            <p class="text-xs text-slate-400">oleh <?= htmlspecialchars($p['nama_penjual']) ?></p>
+                                        </div>
+                                    </div>
                                 </td>
+                                <td><span class="badge-slate"><?= htmlspecialchars($p['nama_kategori']) ?></span></td>
+                                <td class="font-semibold text-slate-800"><?= format_rupiah($p['harga']) ?></td>
                                 <td>
-                                    <?= htmlspecialchars($p['nama_produk']) ?><br>
-                                    <small class="text-muted">Penjual: <?= htmlspecialchars($p['nama_penjual']) ?></small>
-                                </td>
-                                <td><?= htmlspecialchars($p['nama_kategori']) ?></td>
-                                <td><?= format_rupiah($p['harga']) ?></td>
-                                <td><?= $p['stok'] ?></td>
-                                <td>
-                                    <?php if ($p['status'] === 'aktif'): ?>
-                                        <span class="badge bg-success">Aktif</span>
+                                    <?php if ($p['stok'] <= 0): ?>
+                                        <span class="badge-danger">Habis</span>
                                     <?php else: ?>
-                                        <span class="badge bg-secondary">Nonaktif</span>
+                                        <span class="font-medium"><?= $p['stok'] ?></span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-center text-nowrap">
-                                    <a href="edit-produk.php?id=<?= $p['id_produk'] ?>" class="btn btn-sm btn-warning">Edit</a>
-                                    <a href="hapus-produk.php?id=<?= $p['id_produk'] ?>" class="btn btn-sm btn-danger">Hapus</a>
+                                <td>
+                                    <?php if ($p['status'] === 'aktif'): ?>
+                                        <span class="badge-success"><span class="h-1.5 w-1.5 rounded-full bg-primary-500"></span> Aktif</span>
+                                    <?php else: ?>
+                                        <span class="badge-warning"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Nonaktif</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="edit-produk.php?id=<?= $p['id_produk'] ?>"
+                                           class="btn-outline btn-sm" title="Edit produk">
+                                            <i data-lucide="pencil" class="h-3.5 w-3.5"></i> Edit
+                                        </a>
+                                        <a href="hapus-produk.php?id=<?= $p['id_produk'] ?>"
+                                           class="btn-danger btn-sm" title="Hapus produk">
+                                            <i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Hapus
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
-                        <?php endwhile; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
-</div>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/script.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../components/scripts.php'; ?>

@@ -1,10 +1,11 @@
 <?php
 // ============================================================
 // FILE: admin/hapus-produk.php
-// Fungsi : Menghapus produk berdasarkan ?id=id_produk.
-//          1. Menampilkan konfirmasi dulu sebelum menghapus.
+// Fungsi : Konfirmasi + penghapusan produk berdasarkan ?id=.
+//          1. Halaman konfirmasi sebelum menghapus.
 //          2. Menolak hapus jika produk sudah dipakai di
-//             tabel detail_pesanan / detail_keranjang (FK RESTRICT).
+//             detail_pesanan / detail_keranjang (FK RESTRICT).
+//          (logika backend tidak berubah)
 // ============================================================
 session_start();
 require_once '../config/koneksi.php';
@@ -73,50 +74,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'hapus')
     header("Location: produk.php?pesan=hapus-sukses");
     exit;
 }
+
+$base       = '../';
+$judul      = 'Hapus Produk';
+$menu_aktif = 'hapus';
+require_once __DIR__ . '/../components/head.php';
+require_once __DIR__ . '/../components/sidebar-admin.php';
+require_once __DIR__ . '/../components/topbar-admin.php';
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Hapus Produk - Marketplace</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/css/style.css" rel="stylesheet">
-</head>
-<body>
 
-<!-- ================= NAVBAR ================= -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="../index.php">Marketplace</a>
-        <div class="d-flex">
-            <a href="produk.php" class="btn btn-outline-light btn-sm my-2">Kelola Produk</a>
-        </div>
-    </div>
-</nav>
+<main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <!-- Halaman konfirmasi sebelum produk dihapus -->
-            <div class="card shadow-sm border-danger">
-                <div class="card-body p-4 text-center">
-                    <h5 class="text-danger">Konfirmasi Hapus Produk</h5>
-                    <p class="mb-1">Anda yakin ingin menghapus produk:</p>
-                    <p class="fw-bold fs-5">"<?= htmlspecialchars($produk['nama_produk']) ?>"</p>
-                    <p class="text-muted small">Produk yang sudah tercatat dalam transaksi tidak dapat dihapus.</p>
+    <!-- Halaman konfirmasi sebelum produk dihapus -->
+    <div class="mx-auto max-w-lg">
+        <div class="card overflow-hidden">
+            <!-- Header merah -->
+            <div class="bg-gradient-to-br from-rose-500 to-rose-600 px-6 py-7 text-center">
+                <span class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-white backdrop-blur">
+                    <i data-lucide="triangle-alert" class="h-7 w-7"></i>
+                </span>
+                <h1 class="text-lg font-extrabold text-white">Konfirmasi Hapus Produk</h1>
+                <p class="mt-1 text-sm text-rose-100">Tindakan ini tidak dapat dibatalkan</p>
+            </div>
 
-                    <form method="post" action="hapus-produk.php?id=<?= $id_produk ?>" class="d-inline">
-                        <input type="hidden" name="aksi" value="hapus">
-                        <button type="submit" class="btn btn-danger">Ya, Hapus</button>
-                        <a href="produk.php" class="btn btn-secondary">Batal</a>
-                    </form>
+            <div class="p-6 text-center">
+                <!-- Produk yang akan dihapus -->
+                <?php $gambar_hapus = $produk['gambar'] ? $produk['gambar'] : 'default.png'; ?>
+                <div class="mx-auto mb-4 flex w-fit items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-left">
+                    <img src="../assets/images/<?= htmlspecialchars($gambar_hapus) ?>"
+                         alt="<?= htmlspecialchars($produk['nama_produk']) ?>" class="img-thumb">
+                    <p class="max-w-[220px] text-sm font-semibold text-slate-800"><?= htmlspecialchars($produk['nama_produk']) ?></p>
                 </div>
+
+                <p class="text-sm text-slate-500">
+                    Produk yang sudah tercatat dalam transaksi <span class="font-semibold text-slate-700">tidak dapat dihapus</span>.
+                </p>
+
+                <form method="post" action="hapus-produk.php?id=<?= $id_produk ?>" class="mt-6 flex flex-wrap justify-center gap-3">
+                    <input type="hidden" name="aksi" value="hapus">
+                    <button type="submit" class="btn-danger">
+                        <i data-lucide="trash-2" class="h-4 w-4"></i> Ya, Hapus Produk
+                    </button>
+                    <a href="produk.php" class="btn-outline">Batal</a>
+                </form>
             </div>
         </div>
     </div>
-</div>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php require_once __DIR__ . '/../components/scripts.php'; ?>

@@ -1,0 +1,167 @@
+/* ============================================================
+   FILE: assets/css/src/input.css
+   Fungsi : Sumber (source) Tailwind CSS.
+            File ini dikompilasi menjadi assets/css/output.css
+            Perintah build:  npm run build
+   ============================================================ */
+
+/* Font Inter dari Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   BASE - gaya dasar halaman
+   ============================================================ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-slate-50 font-sans text-slate-800 antialiased;
+  }
+  /* Scrollbar halus */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-300;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-100;
+  }
+}
+
+/* ============================================================
+   COMPONENTS - kelas yang dipakai berulang di banyak halaman
+   ============================================================ */
+@layer components {
+  /* --- Tombol --- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply btn bg-primary-600 text-white shadow-btn-primary hover:bg-primary-700
+           focus:ring-primary-500;
+  }
+  .btn-outline {
+    @apply btn border border-slate-200 bg-white text-slate-700 hover:border-primary-300
+           hover:bg-primary-50 hover:text-primary-700 focus:ring-primary-200;
+  }
+  .btn-danger {
+    @apply btn bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500;
+  }
+  .btn-dark {
+    @apply btn bg-slate-800 text-white hover:bg-slate-900 focus:ring-slate-600;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+  .btn-block {
+    @apply w-full;
+  }
+
+  /* --- Form --- */
+  .label-field {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+  .input-field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800
+           placeholder-slate-400 transition
+           focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100;
+  }
+  .input-with-icon {
+    @apply input-field pl-11;
+  }
+
+  /* --- Kartu --- */
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-soft;
+  }
+
+  /* --- Badge / label status --- */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold;
+  }
+  .badge-success {
+    @apply badge bg-primary-100 text-primary-700;
+  }
+  .badge-warning {
+    @apply badge bg-amber-100 text-amber-700;
+  }
+  .badge-slate {
+    @apply badge bg-slate-100 text-slate-600;
+  }
+  .badge-danger {
+    @apply badge bg-rose-100 text-rose-700;
+  }
+  .badge-category {
+    @apply badge bg-slate-100 text-slate-600;
+  }
+
+  /* --- Pesan / alert --- */
+  .alert {
+    @apply mb-4 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm;
+  }
+  .alert-success {
+    @apply alert border-primary-200 bg-primary-50 text-primary-800;
+  }
+  .alert-danger {
+    @apply alert border-rose-200 bg-rose-50 text-rose-700;
+  }
+  .alert-warning {
+    @apply alert border-amber-200 bg-amber-50 text-amber-800;
+  }
+  .alert-info {
+    @apply alert border-sky-200 bg-sky-50 text-sky-800;
+  }
+
+  /* --- Tabel --- */
+  .tabel-data {
+    @apply w-full text-left text-sm;
+  }
+  .tabel-data thead th {
+    @apply border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+  .tabel-data tbody td {
+    @apply border-b border-slate-100 px-4 py-3 text-slate-700;
+  }
+  .tabel-data tbody tr {
+    @apply transition hover:bg-slate-50;
+  }
+
+  /* --- Navigasi --- */
+  .nav-link {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-white/70 hover:text-primary-700;
+  }
+  .nav-link-active {
+    @apply bg-white text-primary-700 shadow-soft;
+  }
+
+  /* --- Gambar kecil pada tabel / list --- */
+  .img-thumb {
+    @apply h-14 w-14 shrink-0 rounded-xl border border-slate-200 object-cover;
+  }
+
+  /* --- Kartu produk --- */
+  .produk-card {
+    @apply card flex h-full flex-col overflow-hidden transition duration-200
+           hover:-translate-y-1 hover:border-primary-200 hover:shadow-card;
+  }
+  .produk-gambar {
+    @apply h-44 w-full bg-slate-100 object-cover transition duration-300 group-hover:scale-[1.03];
+  }
+
+  /* --- Judul bagian --- */
+  .section-title {
+    @apply text-lg font-bold text-slate-800;
+  }
+}
