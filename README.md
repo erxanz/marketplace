@@ -4,10 +4,13 @@ Aplikasi marketplace sederhana dibuat dengan **PHP Native (tanpa framework)**, *
 
 Fitur utama:
 
-- Penjual/admin mengelola produk (tambah, ubah, hapus).
+- Penjual/admin mengelola produk (tambah, ubah, hapus) — tampilan tabel di desktop, daftar card di mobile.
 - Pembeli melihat daftar dan detail produk.
+- Pencarian produk & filter kategori langsung dari beranda.
+- Registrasi akun baru (pembeli/penjual) melalui `register.php`.
 - Pembeli menambahkan produk ke keranjang, mengubah jumlah, dan menghapus item.
 - Pembeli melakukan checkout; pesanan disimpan ke database dan stok produk otomatis berkurang.
+- Desain responsif (mobile/tablet/desktop) dengan **Tailwind CSS** — menggantikan Bootstrap 5.
 
 ---
 
@@ -17,6 +20,7 @@ Fitur utama:
 |---|---|
 | XAMPP | Apache + MySQL (MariaDB) + PHP 8.x |
 | PHP | Minimal 7.4, direkomendasikan 8.x (ext `mysqli`) |
+| Node.js | **Opsional** — hanya untuk build ulang Tailwind CSS (`npm install` + `npm run build`) |
 | Browser | Chrome / Firefox / Edge (tersambung internet untuk CDN Lucide & Google Fonts) |
 
 ---
@@ -105,11 +109,13 @@ marketplace/
 ├── logout.php             # Proses logout
 ├── db_marketplace.sql     # Struktur database + data awal
 ├── package.json           # Script build Tailwind (npm run build)
+├── package-lock.json      # Versi dependency terkunci
 ├── tailwind.config.js     # Konfigurasi Tailwind (content + safelist)
+├── .gitignore             # File yang diabaikan git (node_modules, upload runtime, log)
 └── README.md
 ```
 
-> Catatan: `login.php`, `logout.php`, `register.php`, `config/fungsi.php`, dan folder `components/` adalah file tambahan untuk autentikasi, register, dan komponen UI bersama; struktur utama sesuai soal tidak diubah. `assets/css/style.css` dan `assets/js/script.js` versi lama (Bootstrap) sudah digantikan oleh `input.css`/`output.css` dan `app.js`.
+> Catatan: `login.php`, `logout.php`, `register.php`, `config/fungsi.php`, dan folder `components/` adalah file tambahan untuk autentikasi, register, dan komponen UI bersama; struktur utama sesuai soal tidak diubah. `assets/css/style.css` dan `assets/js/script.js` versi lama (Bootstrap) sudah digantikan oleh `input.css`/`output.css` dan `app.js`. Folder `node_modules/` tidak di-track git (lihat `.gitignore`).
 
 ---
 
@@ -178,6 +184,13 @@ Skenario berikut sudah diuji dan berjalan tanpa error PHP/MySQL:
 11. Stok produk berkurang sesuai jumlah pesanan.
 12. Pesanan gagal (stok tidak cukup) menyebabkan rollback — data tidak berubah sebagian.
 
+Pemeriksaan tampilan responsif (viewport 375 px mobile & 1440 px desktop):
+
+- Navbar depan tidak wrap/terpotong; menu mobile berfungsi.
+- Beranda: hero, chips kategori, dan kartu produk menyesuaikan lebar layar.
+- Detail produk & keranjang: layout bertumpuk rapi di mobile.
+- Halaman admin: sidebar menutup otomatis di mobile (via tombol hamburger) dan tidak menimpa konten di desktop; tabel produk menjadi daftar card di mobile.
+
 Pemeriksaan keamanan yang sudah diterapkan:
 
 - Prepared statement MySQLi di semua query.
@@ -200,3 +213,5 @@ Pemeriksaan keamanan yang sudah diterapkan:
 | Upload gambar gagal | Format harus JPG/PNG/WEBP, ukuran maksimal 2 MB |
 | Tabel tidak ditemukan | Import ulang `db_marketplace.sql` lewat phpMyAdmin |
 | Layout tidak rapi / class aneh | Jalankan ulang `npm run build` (class baru harus ikut ter-compile ke `output.css`) |
+| `npm run build` gagal: module `tailwindcss` tidak ditemukan | Jalankan `npm install` sekali dulu (folder `node_modules` tidak di-track git) |
+| File `node_modules` ke-commit tanpa sengaja | Sudah dicegah `.gitignore`; bila terlanjur: `git rm -r --cached node_modules` lalu commit |

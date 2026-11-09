@@ -1,0 +1,26 @@
+# =====================================================
+# Dependensi Node.js (untuk build Tailwind CSS)
+# Jalankan `npm install` bila ingin `npm run build` / `npm run dev`
+# =====================================================
+node_modules/
+
+# =====================================================
+# File upload produk saat runtime
+# (nama unik hasil fungsi upload(): produk-<13 hex>.ext)
+# Gambar seed produk-N.png TETAP ikut di-repo
+# =====================================================
+assets/images/produk-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]*
+
+# =====================================================
+# Log
+# =====================================================
+*.log
+npm-debug.log*
+
+# =====================================================
+# Editor & sistem operasi
+# =====================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
