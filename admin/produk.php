@@ -56,18 +56,19 @@ $judul      = 'Kelola Produk';
 $menu_aktif = 'produk';
 require_once __DIR__ . '/../components/head.php';
 require_once __DIR__ . '/../components/sidebar-admin.php';
-require_once __DIR__ . '/../components/topbar-admin.php';
 ?>
+<div class="flex min-h-screen flex-1 flex-col lg:pl-64">
+<?php require_once __DIR__ . '/../components/topbar-admin.php'; ?>
 
 <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
 
     <?= tampilkan_pesan() ?>
 
     <!-- ================= STATISTIK ================= -->
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <!-- Total produk -->
-        <div class="card flex items-center gap-4 p-5">
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-100 text-primary-700">
+        <div class="card flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <span class="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-primary-100 text-primary-700">
                 <i data-lucide="package" class="h-5 w-5"></i>
             </span>
             <div>
@@ -76,8 +77,8 @@ require_once __DIR__ . '/../components/topbar-admin.php';
             </div>
         </div>
         <!-- Aktif -->
-        <div class="card flex items-center gap-4 p-5">
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+        <div class="card flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <span class="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
                 <i data-lucide="circle-check" class="h-5 w-5"></i>
             </span>
             <div>
@@ -86,8 +87,8 @@ require_once __DIR__ . '/../components/topbar-admin.php';
             </div>
         </div>
         <!-- Nonaktif -->
-        <div class="card flex items-center gap-4 p-5">
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+        <div class="card flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <span class="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
                 <i data-lucide="circle-pause" class="h-5 w-5"></i>
             </span>
             <div>
@@ -96,8 +97,8 @@ require_once __DIR__ . '/../components/topbar-admin.php';
             </div>
         </div>
         <!-- Stok -->
-        <div class="card flex items-center gap-4 p-5">
-            <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+        <div class="card flex items-center gap-3 p-4 sm:gap-4 sm:p-5">
+            <span class="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
                 <i data-lucide="boxes" class="h-5 w-5"></i>
             </span>
             <div>
@@ -135,8 +136,8 @@ require_once __DIR__ . '/../components/topbar-admin.php';
                 </a>
             </div>
         <?php else: ?>
-            <div class="overflow-x-auto">
-                <table class="tabel-data min-w-[760px]">
+            <div class="hidden overflow-x-auto md:block">
+                <table class="tabel-data min-w-[720px]">
                     <thead>
                         <tr>
                             <th>Produk</th>
@@ -197,8 +198,54 @@ require_once __DIR__ . '/../components/topbar-admin.php';
                     </tbody>
                 </table>
             </div>
+
+            <!-- ===== LIST CARD (mobile, tanpa scroll horizontal) ===== -->
+            <ul class="divide-y divide-slate-100 md:hidden">
+                <?php foreach ($daftar_produk as $p):
+                    $gambar = $p['gambar'] ? $p['gambar'] : 'default.png';
+                ?>
+                    <li class="flex flex-col gap-3 px-4 py-4">
+                        <div class="flex items-start gap-3">
+                            <img src="../assets/images/<?= htmlspecialchars($gambar) ?>"
+                                 alt="<?= htmlspecialchars($p['nama_produk']) ?>" class="img-thumb h-12 w-12 shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate font-semibold text-slate-800"><?= htmlspecialchars($p['nama_produk']) ?></p>
+                                <p class="text-xs text-slate-400">oleh <?= htmlspecialchars($p['nama_penjual']) ?></p>
+                                <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                    <span class="badge-slate"><?= htmlspecialchars($p['nama_kategori']) ?></span>
+                                    <?php if ($p['status'] === 'aktif'): ?>
+                                        <span class="badge-success"><span class="h-1.5 w-1.5 rounded-full bg-primary-500"></span> Aktif</span>
+                                    <?php else: ?>
+                                        <span class="badge-warning"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Nonaktif</span>
+                                    <?php endif; ?>
+                                    <?php if ($p['stok'] <= 0): ?>
+                                        <span class="badge-danger">Stok habis</span>
+                                    <?php else: ?>
+                                        <span class="text-xs text-slate-500">Stok: <span class="font-semibold text-slate-700"><?= $p['stok'] ?></span></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                            <span class="font-bold text-slate-800"><?= format_rupiah($p['harga']) ?></span>
+                            <div class="flex gap-2">
+                                <a href="edit-produk.php?id=<?= $p['id_produk'] ?>"
+                                   class="btn-outline btn-sm" title="Edit produk">
+                                    <i data-lucide="pencil" class="h-3.5 w-3.5"></i> Edit
+                                </a>
+                                <a href="hapus-produk.php?id=<?= $p['id_produk'] ?>"
+                                   class="btn-danger btn-sm" title="Hapus produk">
+                                    <i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Hapus
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         <?php endif; ?>
     </div>
 </main>
+
+</div>
 
 <?php require_once __DIR__ . '/../components/scripts.php'; ?>

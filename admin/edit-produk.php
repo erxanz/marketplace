@@ -102,8 +102,9 @@ $judul      = 'Edit Produk';
 $menu_aktif = 'edit';
 require_once __DIR__ . '/../components/head.php';
 require_once __DIR__ . '/../components/sidebar-admin.php';
-require_once __DIR__ . '/../components/topbar-admin.php';
 ?>
+<div class="flex min-h-screen flex-1 flex-col lg:pl-64">
+<?php require_once __DIR__ . '/../components/topbar-admin.php'; ?>
 
 <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
 
@@ -224,5 +225,7 @@ require_once __DIR__ . '/../components/topbar-admin.php';
         </div>
     </div>
 </main>
+
+</div>
 
 <?php require_once __DIR__ . '/../components/scripts.php'; ?>

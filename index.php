@@ -111,11 +111,11 @@ require_once __DIR__ . '/components/navbar.php';
                     <div class="text-xl font-extrabold sm:text-2xl"><?= $total_produk ?></div>
                     <div class="text-xs text-primary-100">Produk Tersedia</div>
                 </div>
-                <div class="border-l border-white/25 pl-8">
+                <div class="sm:border-l sm:border-white/25 sm:pl-8">
                     <div class="text-xl font-extrabold sm:text-2xl"><?= count($daftar_kategori) ?></div>
                     <div class="text-xs text-primary-100">Kategori</div>
                 </div>
-                <div class="border-l border-white/25 pl-8">
+                <div class="sm:border-l sm:border-white/25 sm:pl-8">
                     <div class="text-xl font-extrabold sm:text-2xl">100%</div>
                     <div class="text-xs text-primary-100">Aman &amp; Terpercaya</div>
                 </div>

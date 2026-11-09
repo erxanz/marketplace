@@ -60,10 +60,10 @@ $menu = [
             <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Kelola Produk</p>
             <ul class="space-y-1">
                 <?php foreach ($menu as $m): ?>
-                    <?php $aktif = in_array($menu_aktif, $m['aktif']); ?>
+                    <?php $menu_dipilih = in_array($menu_aktif, $m['aktif']); ?>
                     <li>
                         <a href="<?= $m['url'] ?>"
-                           class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition <?= $aktif ? 'bg-primary-600 text-white shadow-btn-primary' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>">
+                           class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition <?= $menu_dipilih ? 'bg-primary-600 text-white shadow-btn-primary' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>">
                             <i data-lucide="<?= $m['ikon'] ?>" class="h-4 w-4"></i> <?= $m['teks'] ?>
                         </a>
                     </li>

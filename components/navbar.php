@@ -25,7 +25,7 @@ $cari = $_GET['cari'] ?? '';
         </a>
 
         <!-- SEARCH (desktop) -->
-        <form action="<?= $base ?>index.php" method="get" class="relative mx-auto hidden w-full max-w-xl md:block">
+        <form action="<?= $base ?>index.php" method="get" class="relative mx-auto hidden w-full min-w-0 max-w-xl md:block">
             <i data-lucide="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
             <input type="search" name="cari" value="<?= htmlspecialchars($cari) ?>"
                    placeholder="Cari produk yang kamu mau..."
@@ -34,7 +34,7 @@ $cari = $_GET['cari'] ?? '';
         </form>
 
         <!-- MENU KANAN (desktop) -->
-        <div class="ml-auto hidden items-center gap-1 md:flex">
+        <div class="ml-auto hidden shrink-0 items-center gap-1 md:flex">
             <a href="<?= $base ?>index.php" class="nav-link <?= basename($_SERVER['SCRIPT_NAME']) === 'index.php' ? 'nav-link-active' : '' ?>">
                 Beranda
             </a>
@@ -52,9 +52,9 @@ $cari = $_GET['cari'] ?? '';
         </div>
 
         <!-- AKSI (desktop) -->
-        <div class="ml-2 hidden items-center gap-2 md:flex">
+        <div class="ml-2 hidden shrink-0 items-center gap-2 md:flex">
             <?php if (isset($_SESSION['user_id'])): ?>
-                <span class="flex items-center gap-1.5 rounded-xl bg-primary-50 px-3 py-1.5 text-sm font-semibold text-primary-700">
+                <span class="flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-primary-50 px-3 py-1.5 text-sm font-semibold text-primary-700">
                     <i data-lucide="user-round" class="h-4 w-4"></i>
                     <?= htmlspecialchars($_SESSION['nama']) ?>
                 </span>

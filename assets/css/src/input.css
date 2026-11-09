@@ -140,7 +140,7 @@
 
   /* --- Navigasi --- */
   .nav-link {
-    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-white/70 hover:text-primary-700;
+    @apply whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-white/70 hover:text-primary-700;
   }
   .nav-link-active {
     @apply bg-white text-primary-700 shadow-soft;
