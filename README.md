@@ -92,6 +92,7 @@ marketplace/
 │   └── scripts.php        # Lucide icons + app.js
 ├── admin/
 │   ├── toko.php            # KELOLA TOKO (khusus admin): daftar toko + aktif/nonaktifkan
+│   ├── toko-detail.php     # DETAIL TOKO (admin): profil penjual + produk yang dijual
 │   ├── pesanan.php         # KELOLA PESANAN (admin & penjual): ubah status pesanan
 │   ├── produk.php         # Dashboard penjual: statistik + daftar produk (CRUD)
 │   ├── tambah-produk.php  # Form tambah produk + upload gambar
@@ -193,10 +194,11 @@ menunggu ──proses──> diproses ──kirim──> dikirim ──selesai�
 ### C. Sebagai Admin (kelola toko & pesanan)
 1. Login menggunakan akun admin → langsung ke **Kelola Toko** (`admin/toko.php`).
 2. Melihat daftar semua toko (penjual) beserta jumlah produk, total stok, dan status.
-3. **Nonaktifkan** toko → seluruh produk tokonya langsung tidak tampil di beranda & detail.
-4. **Aktifkan** kembali → produk tokonya tampil kembali.
-5. Admin **tidak bisa** membuka halaman kelola produk (dialihkan ke Kelola Toko).
-6. Buka **Kelola Pesanan** (`admin/pesanan.php`) → semua pesanan marketplace; ubah status pesanan (Proses / Kirim / Selesai / Batalkan) sesuai aturan transisi.
+3. **Klik nama toko** → halaman **Detail Toko** (`admin/toko-detail.php?id=…`): profil penjual + **seluruh produk yang dijual** (gambar, kategori, harga, stok, status — read-only) beserta statistik produknya.
+4. **Nonaktifkan** toko (dari daftar maupun halaman detail) → seluruh produk tokonya langsung tidak tampil di beranda & detail.
+5. **Aktifkan** kembali → produk tokonya tampil kembali.
+6. Admin **tidak bisa** membuka halaman kelola produk (dialihkan ke Kelola Toko).
+7. Buka **Kelola Pesanan** (`admin/pesanan.php`) → semua pesanan marketplace; ubah status pesanan (Proses / Kirim / Selesai / Batalkan) sesuai aturan transisi.
 
 ---
 
@@ -223,6 +225,7 @@ Skenario berikut sudah diuji dan berjalan tanpa error PHP/MySQL:
 17. **Riwayat Pesanan** (`pesanan.php`) menampilkan semua pesanan pembeli dengan badge status; tamu diarahkan ke login.
 18. **Kelola Pesanan**: admin membuka semua pesanan; penjual hanya pesanan produk miliknya; pembeli ditolak (`role-tolak`).
 19. Transisi status valid (diproses→dikirim→selesai, batal) tersimpan di DB; transisi di luar peta & ubah pesanan penjual lain ditolak tanpa mengubah data.
+20. Admin mengklik nama toko di Kelola Toko → **Detail Toko** menampilkan profil + seluruh produk toko tersebut (termasuk produk nonaktif), tanpa produk toko lain; id tidak valid / role selain admin ditolak; toko nonaktif tetap bisa dibuka admin dan bisa diaktifkan kembali dari halaman detail.
 
 Pemeriksaan tampilan responsif (viewport 375 px mobile & 1440 px desktop):
 

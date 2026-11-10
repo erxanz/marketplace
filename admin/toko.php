@@ -105,6 +105,7 @@ require_once __DIR__ . '/../components/sidebar-admin.php';
                 <h2 class="text-base font-bold text-slate-800">Daftar Toko</h2>
                 <p class="text-xs text-slate-500">
                     Penjual di marketplace &middot; <?= $total_toko ?> toko
+                    &middot; klik nama toko untuk melihat produknya
                 </p>
             </div>
             <span class="badge-slate">
@@ -145,7 +146,10 @@ require_once __DIR__ . '/../components/sidebar-admin.php';
                                             <?= strtoupper(substr($t['nama'], 0, 1)) ?>
                                         </span>
                                         <div class="min-w-0">
-                                            <p class="truncate font-semibold text-slate-800"><?= htmlspecialchars($t['nama']) ?></p>
+                                            <a href="toko-detail.php?id=<?= $t['id_user'] ?>"
+                                               class="truncate font-semibold text-slate-800 hover:text-primary-700 hover:underline">
+                                                <?= htmlspecialchars($t['nama']) ?>
+                                            </a>
                                             <p class="truncate text-xs text-slate-400"><?= htmlspecialchars($t['email']) ?></p>
                                         </div>
                                     </div>
@@ -194,7 +198,10 @@ require_once __DIR__ . '/../components/sidebar-admin.php';
                                 <?= strtoupper(substr($t['nama'], 0, 1)) ?>
                             </span>
                             <div class="min-w-0 flex-1">
-                                <p class="truncate font-semibold text-slate-800"><?= htmlspecialchars($t['nama']) ?></p>
+                                <a href="toko-detail.php?id=<?= $t['id_user'] ?>"
+                                   class="truncate font-semibold text-slate-800 hover:text-primary-700 hover:underline">
+                                    <?= htmlspecialchars($t['nama']) ?>
+                                </a>
                                 <p class="truncate text-xs text-slate-400"><?= htmlspecialchars($t['email']) ?></p>
                                 <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
                                     <?php if ($t['status'] === 'aktif'): ?>
