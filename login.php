@@ -129,23 +129,63 @@ require_once __DIR__ . '/components/head.php';
             <!-- Akun demo -->
             <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <p class="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
-                    <i data-lucide="key-round" class="h-3.5 w-3.5"></i> Akun Demo
+                    <i data-lucide="key-round" class="h-3.5 w-3.5"></i> Akun Demo <span class="text-[10px] font-normal normal-case text-slate-400">(klik teks/password untuk menyalin)</span>
                 </p>
                 <ul class="space-y-1.5 text-xs text-slate-600">
                     <li class="flex items-center justify-between gap-2">
-                        <span><span class="badge-slate mr-1.5">Admin</span> admin@marketplace.test</span>
-                        <code class="font-mono font-semibold">admin123</code>
+                        <span>
+                            <span class="badge-slate mr-1.5">Admin</span>
+                            <span onclick="copyToClipboard('admin@marketplace.test')" class="cursor-pointer hover:underline hover:text-indigo-600" title="Klik untuk salin">admin@marketplace.test</span>
+                        </span>
+                        <code onclick="copyToClipboard('admin123')" class="cursor-pointer font-mono font-semibold hover:bg-slate-200 rounded px-1 transition-colors" title="Klik untuk salin">admin123</code>
                     </li>
                     <li class="flex items-center justify-between gap-2">
-                        <span><span class="badge-slate mr-1.5">Penjual</span> budi@marketplace.test</span>
-                        <code class="font-mono font-semibold">penjual123</code>
+                        <span>
+                            <span class="badge-slate mr-1.5">Penjual</span>
+                            <span onclick="copyToClipboard('budi@marketplace.test')" class="cursor-pointer hover:underline hover:text-indigo-600" title="Klik untuk salin">budi@marketplace.test</span>
+                        </span>
+                        <code onclick="copyToClipboard('penjual123')" class="cursor-pointer font-mono font-semibold hover:bg-slate-200 rounded px-1 transition-colors" title="Klik untuk salin">penjual123</code>
                     </li>
                     <li class="flex items-center justify-between gap-2">
-                        <span><span class="badge-slate mr-1.5">Pembeli</span> siti@marketplace.test</span>
-                        <code class="font-mono font-semibold">pembeli123</code>
+                        <span>
+                            <span class="badge-slate mr-1.5">Pembeli</span>
+                            <span onclick="copyToClipboard('siti@marketplace.test')" class="cursor-pointer hover:underline hover:text-indigo-600" title="Klik untuk salin">siti@marketplace.test</span>
+                        </span>
+                        <code onclick="copyToClipboard('pembeli123')" class="cursor-pointer font-mono font-semibold hover:bg-slate-200 rounded px-1 transition-colors" title="Klik untuk salin">pembeli123</code>
                     </li>
                 </ul>
             </div>
+
+            <!-- Toast Element (Wajib ada di HTML, letakkan di dekat penutup body) -->
+            <div id="copy-toast" class="fixed bottom-5 right-5 z-50 translate-y-20 opacity-0 transition-all duration-300 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white shadow-lg flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span id="toast-message">Tersalin ke clipboard!</span>
+            </div>
+
+            <!-- Script untuk menangani copy & toast non-ganggu -->
+            <script>
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const toast = document.getElementById('copy-toast');
+                    const message = document.getElementById('toast-message');
+                    
+                    message.textContent = `Tersalin: ${text}`;
+                    
+                    // Munculkan toast
+                    toast.classList.remove('translate-y-20', 'opacity-0');
+                    toast.classList.add('translate-y-0', 'opacity-100');
+                    
+                    // Sembunyikan otomatis setelah 2 detik
+                    setTimeout(() => {
+                        toast.classList.remove('translate-y-0', 'opacity-100');
+                        toast.classList.add('translate-y-20', 'opacity-0');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Gagal menyalin:', err);
+                });
+            }
+            </script>
+
         </div>
 
         <p class="mt-6 text-center text-sm">
