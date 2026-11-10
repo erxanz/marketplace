@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pesan = '<div class="alert-danger">Email dan password wajib diisi.</div>';
     } else {
         // Cari user berdasarkan email (prepared statement)
-        $sql  = "SELECT id_user, nama, password, role FROM users WHERE email = ?";
+        $sql  = "SELECT id_user, nama, password, role, status FROM users WHERE email = ?";
         $stmt = mysqli_prepare($koneksi, $sql);
         mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
@@ -42,20 +42,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Verifikasi password
         if ($user && password_verify($password, $user['password'])) {
-            // Simpan identitas user ke session
-            $_SESSION['user_id'] = $user['id_user'];
-            $_SESSION['nama']    = $user['nama'];
-            $_SESSION['role']    = $user['role'];
-
-            // Arahkan sesuai role
-            if ($user['role'] === 'pembeli') {
-                header("Location: index.php");
-            } elseif ($user['role'] === 'admin') {
-                header("Location: admin/toko.php");
+            // Akun nonaktif (dikelola admin) tidak boleh login
+            if ($user['status'] === 'nonaktif') {
+                $pesan = '<div class="alert-danger">Akun tidak aktif. Hubungi admin untuk mengaktifkan kembali.</div>';
             } else {
-                header("Location: admin/produk.php");
+                // Simpan identitas user ke session
+                $_SESSION['user_id'] = $user['id_user'];
+                $_SESSION['nama']    = $user['nama'];
+                $_SESSION['role']    = $user['role'];
+
+                // Arahkan sesuai role
+                if ($user['role'] === 'pembeli') {
+                    header("Location: index.php");
+                } elseif ($user['role'] === 'admin') {
+                    header("Location: admin/toko.php");
+                } else {
+                    header("Location: admin/produk.php");
+                }
+                exit;
             }
-            exit;
         } else {
             $pesan = '<div class="alert-danger">Email atau password salah.</div>';
         }

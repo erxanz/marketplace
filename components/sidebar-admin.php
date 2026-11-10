@@ -10,21 +10,35 @@ $base       = $base ?? '';
 $menu_aktif = $menu_aktif ?? '';
 $role_user  = $_SESSION['role'] ?? 'pembeli';
 
-// Menu berbeda per role:
-// - admin    -> Kelola Toko (kelola status penjual) + Kelola Pesanan
-// - penjual  -> Kelola Produk (produk milik sendiri) + Kelola Pesanan
+// Menu berbeda per role (bisa lebih dari satu grup):
+// - admin    -> Toko (kelola toko + pesanan) & Pengguna (kelola users)
+// - penjual  -> Kelola Produk (produk milik sendiri + pesanan)
 if ($role_user === 'admin') {
-    $label_grup = 'Toko';
-    $menu = [
-        ['ikon' => 'store', 'teks' => 'Kelola Toko', 'url' => 'toko.php', 'aktif' => ['toko']],
-        ['ikon' => 'receipt-text', 'teks' => 'Kelola Pesanan', 'url' => 'pesanan.php', 'aktif' => ['pesanan']],
+    $grup_menu = [
+        [
+            'label' => 'Toko',
+            'menu'  => [
+                ['ikon' => 'store',         'teks' => 'Kelola Toko',    'url' => 'toko.php',    'aktif' => ['toko']],
+                ['ikon' => 'receipt-text',  'teks' => 'Kelola Pesanan', 'url' => 'pesanan.php', 'aktif' => ['pesanan']],
+            ],
+        ],
+        [
+            'label' => 'Pengguna',
+            'menu'  => [
+                ['ikon' => 'users', 'teks' => 'Kelola Users', 'url' => 'users.php', 'aktif' => ['users']],
+            ],
+        ],
     ];
 } else {
-    $label_grup = 'Kelola Produk';
-    $menu = [
-        ['ikon' => 'layout-dashboard', 'teks' => 'Kelola Produk', 'url' => 'produk.php',   'aktif' => ['produk', 'edit', 'hapus']],
-        ['ikon' => 'plus-circle',      'teks' => 'Tambah Produk', 'url' => 'tambah-produk.php', 'aktif' => ['tambah']],
-        ['ikon' => 'receipt-text',     'teks' => 'Kelola Pesanan', 'url' => 'pesanan.php', 'aktif' => ['pesanan']],
+    $grup_menu = [
+        [
+            'label' => 'Kelola Produk',
+            'menu'  => [
+                ['ikon' => 'layout-dashboard', 'teks' => 'Kelola Produk', 'url' => 'produk.php',        'aktif' => ['produk', 'edit', 'hapus']],
+                ['ikon' => 'plus-circle',      'teks' => 'Tambah Produk', 'url' => 'tambah-produk.php', 'aktif' => ['tambah']],
+                ['ikon' => 'receipt-text',     'teks' => 'Kelola Pesanan', 'url' => 'pesanan.php',       'aktif' => ['pesanan']],
+            ],
+        ],
     ];
 }
 ?>
@@ -75,18 +89,20 @@ if ($role_user === 'admin') {
         </div>
 
         <div>
-            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500"><?= $label_grup ?></p>
-            <ul class="space-y-1">
-                <?php foreach ($menu as $m): ?>
-                    <?php $menu_dipilih = in_array($menu_aktif, $m['aktif']); ?>
-                    <li>
-                        <a href="<?= $m['url'] ?>"
-                           class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition <?= $menu_dipilih ? 'bg-primary-600 text-white shadow-btn-primary' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>">
-                            <i data-lucide="<?= $m['ikon'] ?>" class="h-4 w-4"></i> <?= $m['teks'] ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+            <?php foreach ($grup_menu as $grup): ?>
+                <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500"><?= $grup['label'] ?></p>
+                <ul class="mb-6 space-y-1">
+                    <?php foreach ($grup['menu'] as $m): ?>
+                        <?php $menu_dipilih = in_array($menu_aktif, $m['aktif']); ?>
+                        <li>
+                            <a href="<?= $m['url'] ?>"
+                               class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition <?= $menu_dipilih ? 'bg-primary-600 text-white shadow-btn-primary' : 'text-slate-400 hover:bg-slate-800 hover:text-white' ?>">
+                                <i data-lucide="<?= $m['ikon'] ?>" class="h-4 w-4"></i> <?= $m['teks'] ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endforeach; ?>
         </div>
     </nav>
 

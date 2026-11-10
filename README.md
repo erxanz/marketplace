@@ -13,6 +13,7 @@ Fitur utama:
 - Pembeli melakukan checkout dengan **pilihan metode pembayaran** (Transfer Bank / E-Wallet / COD); pesanan disimpan dengan status awal **diproses** dan stok produk otomatis berkurang.
 - **Riwayat Pesanan** (`pesanan.php`) — pembeli melihat semua pesannya: rincian, metode pembayaran, dan status terkini.
 - **Kelola Pesanan** (`admin/pesanan.php`) — admin & penjual mengubah status pesanan: `diproses` → `dikirim` → `selesai` (plus pembatalan); penjual hanya melihat pesanan yang memuat produk miliknya.
+- **Kelola Users** (`admin/users.php`) — admin mengelola seluruh pengguna: pencarian + filter role/status, ubah data & reset password (`admin/user-edit.php`), aktif/nonaktifkan akun (**nonaktif = login diblokir**), dan hapus pengguna yang belum punya produk/pesanan/keranjang.
 - Desain responsif (mobile/tablet/desktop) dengan **Tailwind CSS** — menggantikan Bootstrap 5.
 
 ---
@@ -94,6 +95,8 @@ marketplace/
 │   ├── toko.php            # KELOLA TOKO (khusus admin): daftar toko + aktif/nonaktifkan
 │   ├── toko-detail.php     # DETAIL TOKO (admin): profil penjual + produk yang dijual
 │   ├── pesanan.php         # KELOLA PESANAN (admin & penjual): ubah status pesanan
+│   ├── users.php           # KELOLA USERS (admin): daftar, filter, aktif/nonaktif, hapus
+│   ├── user-edit.php       # EDIT PENGGUNA (admin): ubah data + reset password
 │   ├── produk.php         # Dashboard penjual: statistik + daftar produk (CRUD)
 │   ├── tambah-produk.php  # Form tambah produk + upload gambar
 │   ├── edit-produk.php    # Form ubah produk
@@ -132,7 +135,7 @@ marketplace/
 
 | No | Tabel | Fungsi |
 |---|---|---|
-| 1 | `users` | Admin, penjual, pembeli (role: `admin` / `penjual` / `pembeli`; kolom `status` = `aktif`/`nonaktif` untuk toko) |
+| 1 | `users` | Admin, penjual, pembeli (role: `admin` / `penjual` / `pembeli`; kolom `status` = `aktif`/`nonaktif` — toko nonaktif menyembunyikan produknya, akun nonaktif **diblokir dari login**) |
 | 2 | `kategori` | Kategori produk |
 | 3 | `produk` | Produk → FK ke `users` (penjual) dan `kategori` |
 | 4 | `keranjang` | Keranjang tiap user (`status`: `aktif` / `checkout`) |
@@ -199,6 +202,11 @@ menunggu ──proses──> diproses ──kirim──> dikirim ──selesai�
 5. **Aktifkan** kembali → produk tokonya tampil kembali.
 6. Admin **tidak bisa** membuka halaman kelola produk (dialihkan ke Kelola Toko).
 7. Buka **Kelola Pesanan** (`admin/pesanan.php`) → semua pesanan marketplace; ubah status pesanan (Proses / Kirim / Selesai / Batalkan) sesuai aturan transisi.
+8. Buka **Kelola Users** (`admin/users.php`):
+   - Cari nama/email serta filter berdasarkan **role** dan **status**.
+   - **Edit** → ubah nama, email, no. HP, alamat, role; **password baru** diisi hanya jika ingin reset (kosongkan = tetap). Role akun sendiri tidak bisa diubah.
+   - **Nonaktifkan** akun → pengguna tersebut **tidak bisa login** sampai diaktifkan kembali.
+   - **Hapus** pengguna yang belum punya produk/pesanan/keranjang (yang sudah punya ditolak demi Foreign Key). Admin tidak bisa menonaktifkan/menghapus akunnya sendiri.
 
 ---
 
@@ -226,6 +234,11 @@ Skenario berikut sudah diuji dan berjalan tanpa error PHP/MySQL:
 18. **Kelola Pesanan**: admin membuka semua pesanan; penjual hanya pesanan produk miliknya; pembeli ditolak (`role-tolak`).
 19. Transisi status valid (diproses→dikirim→selesai, batal) tersimpan di DB; transisi di luar peta & ubah pesanan penjual lain ditolak tanpa mengubah data.
 20. Admin mengklik nama toko di Kelola Toko → **Detail Toko** menampilkan profil + seluruh produk toko tersebut (termasuk produk nonaktif), tanpa produk toko lain; id tidak valid / role selain admin ditolak; toko nonaktif tetap bisa dibuka admin dan bisa diaktifkan kembali dari halaman detail.
+21. **Kelola Users**: admin membuka daftar + filter role/status/pencarian; penjual & pembeli ditolak; sidebar penjual tanpa menu users.
+22. Nonaktifkan akun pembeli → login ditolak (pesan "Akun tidak aktif", tanpa session); diaktifkan lagi → login normal.
+23. Edit data sukses; email kembar & password < 6 karakter ditolak; reset password → password lama mati, password baru masuk.
+24. Role akun admin tidak bisa diubah lewat edit diri; toggle/hapus akun sendiri ditolak (`user-sendiri`).
+25. Hapus pengguna kosong sukses; pengguna yang punya produk ditolak (`user-digunakan`); id tidak ada → `user-invalid`.
 
 Pemeriksaan tampilan responsif (viewport 375 px mobile & 1440 px desktop):
 
