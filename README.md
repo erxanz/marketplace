@@ -121,6 +121,7 @@ marketplace/
 ├── package.json           # Script build Tailwind (npm run build)
 ├── package-lock.json      # Versi dependency terkunci
 ├── tailwind.config.js     # Konfigurasi Tailwind (content + safelist)
+├── favicon.ico            # Ikon tab browser (tas belanja emerald)
 ├── .gitignore             # File yang diabaikan git (node_modules, upload runtime, log)
 └── README.md
 ```

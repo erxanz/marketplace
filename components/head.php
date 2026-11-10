@@ -15,6 +15,8 @@ $base  = $base ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($judul) ?> - Marketplace</title>
+    <!-- Favicon (ikon tas belanja emerald) -->
+    <link rel="icon" href="<?= $base ?>favicon.ico" sizes="any" type="image/x-icon">
     <!-- Hasil build Tailwind CSS (npm run build) -->
     <link rel="stylesheet" href="<?= $base ?>assets/css/output.css">
 </head>
