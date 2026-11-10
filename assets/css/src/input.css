@@ -103,6 +103,12 @@
   .badge-danger {
     @apply badge bg-rose-100 text-rose-700;
   }
+  .badge-info {
+    @apply badge bg-sky-100 text-sky-700;
+  }
+  .badge-indigo {
+    @apply badge bg-indigo-100 text-indigo-700;
+  }
   .badge-category {
     @apply badge bg-slate-100 text-slate-600;
   }

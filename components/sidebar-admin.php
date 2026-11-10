@@ -11,18 +11,20 @@ $menu_aktif = $menu_aktif ?? '';
 $role_user  = $_SESSION['role'] ?? 'pembeli';
 
 // Menu berbeda per role:
-// - admin    -> Kelola Toko (kelola status penjual)
-// - penjual  -> Kelola Produk (produk milik sendiri)
+// - admin    -> Kelola Toko (kelola status penjual) + Kelola Pesanan
+// - penjual  -> Kelola Produk (produk milik sendiri) + Kelola Pesanan
 if ($role_user === 'admin') {
     $label_grup = 'Toko';
     $menu = [
         ['ikon' => 'store', 'teks' => 'Kelola Toko', 'url' => 'toko.php', 'aktif' => ['toko']],
+        ['ikon' => 'receipt-text', 'teks' => 'Kelola Pesanan', 'url' => 'pesanan.php', 'aktif' => ['pesanan']],
     ];
 } else {
     $label_grup = 'Kelola Produk';
     $menu = [
         ['ikon' => 'layout-dashboard', 'teks' => 'Kelola Produk', 'url' => 'produk.php',   'aktif' => ['produk', 'edit', 'hapus']],
         ['ikon' => 'plus-circle',      'teks' => 'Tambah Produk', 'url' => 'tambah-produk.php', 'aktif' => ['tambah']],
+        ['ikon' => 'receipt-text',     'teks' => 'Kelola Pesanan', 'url' => 'pesanan.php', 'aktif' => ['pesanan']],
     ];
 }
 ?>
@@ -61,6 +63,12 @@ if ($role_user === 'admin') {
                     <a href="<?= $base ?>keranjang.php"
                        class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white">
                         <i data-lucide="shopping-cart" class="h-4 w-4"></i> Keranjang
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= $base ?>pesanan.php"
+                       class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white">
+                        <i data-lucide="receipt-text" class="h-4 w-4"></i> Pesanan Saya
                     </a>
                 </li>
             </ul>

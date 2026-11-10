@@ -10,7 +10,9 @@ Fitur utama:
 - Pencarian produk & filter kategori langsung dari beranda.
 - Registrasi akun baru (pembeli/penjual) melalui `register.php`.
 - Pembeli menambahkan produk ke keranjang, mengubah jumlah, dan menghapus item.
-- Pembeli melakukan checkout; pesanan disimpan ke database dan stok produk otomatis berkurang.
+- Pembeli melakukan checkout dengan **pilihan metode pembayaran** (Transfer Bank / E-Wallet / COD); pesanan disimpan dengan status awal **diproses** dan stok produk otomatis berkurang.
+- **Riwayat Pesanan** (`pesanan.php`) — pembeli melihat semua pesannya: rincian, metode pembayaran, dan status terkini.
+- **Kelola Pesanan** (`admin/pesanan.php`) — admin & penjual mengubah status pesanan: `diproses` → `dikirim` → `selesai` (plus pembatalan); penjual hanya melihat pesanan yang memuat produk miliknya.
 - Desain responsif (mobile/tablet/desktop) dengan **Tailwind CSS** — menggantikan Bootstrap 5.
 
 ---
@@ -90,6 +92,7 @@ marketplace/
 │   └── scripts.php        # Lucide icons + app.js
 ├── admin/
 │   ├── toko.php            # KELOLA TOKO (khusus admin): daftar toko + aktif/nonaktifkan
+│   ├── pesanan.php         # KELOLA PESANAN (admin & penjual): ubah status pesanan
 │   ├── produk.php         # Dashboard penjual: statistik + daftar produk (CRUD)
 │   ├── tambah-produk.php  # Form tambah produk + upload gambar
 │   ├── edit-produk.php    # Form ubah produk
@@ -105,7 +108,8 @@ marketplace/
 │   └── checkout.php          # Proses checkout (transaksi database)
 ├── index.php              # Beranda: hero, filter kategori, pencarian, produk
 ├── detail-produk.php      # Detail satu produk (layout 2 kolom)
-├── keranjang.php          # Keranjang + order summary + checkout
+├── keranjang.php          # Keranjang + order summary + pilih metode + checkout
+├── pesanan.php            # Riwayat pesanan pembeli (read-only)
 ├── login.php              # Halaman login
 ├── register.php           # Halaman daftar akun (baru)
 ├── logout.php             # Proses logout
@@ -132,7 +136,7 @@ marketplace/
 | 3 | `produk` | Produk → FK ke `users` (penjual) dan `kategori` |
 | 4 | `keranjang` | Keranjang tiap user (`status`: `aktif` / `checkout`) |
 | 5 | `detail_keranjang` | Isi keranjang → FK ke `keranjang` dan `produk`, unik per (keranjang, produk) |
-| 6 | `pesanan` | Transaksi pesanan → FK ke `users` |
+| 6 | `pesanan` | Transaksi pesanan → FK ke `users`; kolom `metode_pembayaran` (`transfer`/`ewallet`/`cod`) dan `status` (`menunggu`/`diproses`/`dikirim`/`selesai`/`dibatalkan`) |
 | 7 | `detail_pesanan` | Rincian pesanan (jumlah, harga saat pesan, subtotal) |
 
 Aturan peran & toko:
@@ -145,10 +149,22 @@ Alur checkout:
 
 1. Harga diambil **langsung dari tabel `produk`** (bukan dari input user).
 2. Seluruh proses berjalan dalam **satu transaksi MySQLi** (`begin_transaction` → `commit` / `rollback`).
-3. Data masuk `pesanan` + `detail_pesanan`.
-4. Stok produk dikurangi (dengan syarat `stok >= jumlah`).
-5. Keranjang menjadi `checkout` dan `detail_keranjang` dikosongkan.
-6. Jika terjadi kegagalan di tengah jalan (misal stok habis), **semua perubahan dibatalkan** (rollback).
+3. Pembeli **wajib memilih metode pembayaran** (Transfer Bank / E-Wallet / COD) — tanpa metode, checkout ditolak.
+4. Data masuk `pesanan` (status awal **`diproses`**, lengkap dengan `metode_pembayaran`) + `detail_pesanan`.
+5. Stok produk dikurangi (dengan syarat `stok >= jumlah`).
+6. Keranjang menjadi `checkout` dan `detail_keranjang` dikosongkan.
+7. Jika terjadi kegagalan di tengah jalan (misal stok habis), **semua perubahan dibatalkan** (rollback).
+
+Alur status pesanan (Kelola Pesanan):
+
+```
+menunggu ──proses──> diproses ──kirim──> dikirim ──selesai──> selesai
+    │                    │
+    └──── batal ─────────┴── batal ──────────────> dibatalkan
+```
+
+- Transisi hanya boleh maju sesuai panah; aksi di luar peta ditolak (tidak ada perubahan data).
+- Admin boleh mengubah semua pesanan; penjual hanya pesanan yang memuat produk miliknya.
 
 ---
 
@@ -160,8 +176,9 @@ Alur checkout:
 3. Klik **Detail Produk** untuk melihat deskripsi, stok, dan penjual.
 4. Klik **Tambah ke Keranjang** (wajib login — jika belum, otomatis diarahkan ke halaman login).
 5. Buka **Keranjang**, ubah jumlah atau hapus item sesuai kebutuhan (ringkasan pesanan ada di sisi kanan).
-6. Isi **Alamat Pengiriman** → klik **Checkout Sekarang**.
-7. Halaman "Pesanan Berhasil" menampilkan nomor pesanan, rincian, dan total belanja.
+6. Isi **Alamat Pengiriman**, pilih **Metode Pembayaran** (Transfer Bank / E-Wallet / COD) → klik **Checkout Sekarang**.
+7. Halaman "Pesanan Berhasil" menampilkan nomor pesanan, rincian, metode pembayaran, dan status **Diproses** → klik **Lihat Riwayat Pesanan** untuk membuka `pesanan.php`.
+8. Di **Pesanan Saya** (`pesanan.php`), status tiap pesanan terlihat (Diproses → Dikirim → Selesai / Dibatalkan) — halaman ini hanya bisa dilihat, tidak bisa diubah oleh pembeli.
 
 ### B. Sebagai Penjual (pemilik toko)
 1. Login menggunakan akun penjual → langsung ke **Kelola Produk** (`admin/produk.php`).
@@ -171,13 +188,15 @@ Alur checkout:
 3. **Edit** → ubah data; kosongkan input gambar jika tidak ingin mengganti gambar.
 4. **Hapus** → muncul halaman konfirmasi → **Ya, Hapus**.
    - Produk yang sudah tercatat di `detail_pesanan` / `detail_keranjang` **tidak bisa dihapus** (dilindungi Foreign Key).
+5. Buka **Kelola Pesanan** (`admin/pesanan.php`) → hanya pesanan yang memuat produk miliknya yang tampil; ubah status lewat tombol **Proses / Kirim / Selesai / Batalkan**.
 
-### C. Sebagai Admin (kelola toko)
+### C. Sebagai Admin (kelola toko & pesanan)
 1. Login menggunakan akun admin → langsung ke **Kelola Toko** (`admin/toko.php`).
 2. Melihat daftar semua toko (penjual) beserta jumlah produk, total stok, dan status.
 3. **Nonaktifkan** toko → seluruh produk tokonya langsung tidak tampil di beranda & detail.
 4. **Aktifkan** kembali → produk tokonya tampil kembali.
 5. Admin **tidak bisa** membuka halaman kelola produk (dialihkan ke Kelola Toko).
+6. Buka **Kelola Pesanan** (`admin/pesanan.php`) → semua pesanan marketplace; ubah status pesanan (Proses / Kirim / Selesai / Batalkan) sesuai aturan transisi.
 
 ---
 
@@ -199,6 +218,11 @@ Skenario berikut sudah diuji dan berjalan tanpa error PHP/MySQL:
 12. Pesanan gagal (stok tidak cukup) menyebabkan rollback — data tidak berubah sebagian.
 13. Admin login → diarahkan ke Kelola Toko; membuka halaman kelola produk dialihkan (penjual tetap bisa).
 14. Admin menonaktifkan toko → produk tokonya hilang dari beranda, diaktifkan lagi → tampil kembali.
+15. Checkout **tanpa metode pembayaran** (atau metode di luar pilihan) → ditolak, tidak ada pesanan tersimpan.
+16. Checkout dengan metode → pesanan tersimpan dengan status **`diproses`** + `metode_pembayaran` benar; halaman sukses menampilkan metode & link riwayat.
+17. **Riwayat Pesanan** (`pesanan.php`) menampilkan semua pesanan pembeli dengan badge status; tamu diarahkan ke login.
+18. **Kelola Pesanan**: admin membuka semua pesanan; penjual hanya pesanan produk miliknya; pembeli ditolak (`role-tolak`).
+19. Transisi status valid (diproses→dikirim→selesai, batal) tersimpan di DB; transisi di luar peta & ubah pesanan penjual lain ditolak tanpa mengubah data.
 
 Pemeriksaan tampilan responsif (viewport 375 px mobile & 1440 px desktop):
 

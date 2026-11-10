@@ -149,6 +149,9 @@ CREATE TABLE pesanan (
     tanggal_pesanan TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     alamat_pengiriman TEXT NOT NULL,
     total_harga DECIMAL(14,2) NOT NULL DEFAULT 0,
+    -- Metode pembayaran dipilih pembeli saat checkout
+    metode_pembayaran ENUM('transfer', 'ewallet', 'cod')
+        NOT NULL DEFAULT 'transfer',
     status ENUM(
         'menunggu',
         'diproses',

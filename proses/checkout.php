@@ -32,6 +32,13 @@ if ($alamat === '') {
     exit;
 }
 
+// Validasi metode pembayaran (wajib salah satu dari pilihan)
+$metode = $_POST['metode_pembayaran'] ?? '';
+if (!in_array($metode, ['transfer', 'ewallet', 'cod'], true)) {
+    header("Location: ../keranjang.php?pesan=metode-invalid");
+    exit;
+}
+
 // Supaya error MySQL menjadi exception (mudah ditangkap dengan try-catch)
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -88,10 +95,11 @@ try {
     mysqli_begin_transaction($koneksi);
 
     // 3a. Masukkan ke tabel pesanan
-    $sql = "INSERT INTO pesanan (id_user, alamat_pengiriman, total_harga, status)
-            VALUES (?, ?, ?, 'menunggu')";
+    //     Status langsung 'diproses' (pembayaran dipilih saat checkout)
+    $sql = "INSERT INTO pesanan (id_user, alamat_pengiriman, total_harga, metode_pembayaran, status)
+            VALUES (?, ?, ?, ?, 'diproses')";
     $stmt = mysqli_prepare($koneksi, $sql);
-    mysqli_stmt_bind_param($stmt, "isd", $id_user, $alamat, $total);
+    mysqli_stmt_bind_param($stmt, "isds", $id_user, $alamat, $total, $metode);
     mysqli_stmt_execute($stmt);
     $id_pesanan = mysqli_insert_id($koneksi);
 
@@ -180,7 +188,7 @@ require_once __DIR__ . '/../components/navbar.php';
                 <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Nomor Pesanan</p>
                 <p class="text-lg font-extrabold text-slate-800">#<?= $id_pesanan ?></p>
             </div>
-            <span class="badge-warning text-xs"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> Status: Menunggu</span>
+            <span class="badge-success text-xs"><span class="h-1.5 w-1.5 rounded-full bg-primary-500"></span> Status: Diproses</span>
         </div>
 
         <div class="p-5">
@@ -190,6 +198,14 @@ require_once __DIR__ . '/../components/navbar.php';
                     <i data-lucide="map-pin" class="h-3.5 w-3.5 text-primary-600"></i> Alamat Pengiriman
                 </p>
                 <p class="text-sm leading-relaxed text-slate-700"><?= nl2br(htmlspecialchars($alamat)) ?></p>
+            </div>
+
+            <!-- Metode pembayaran -->
+            <div class="mb-5 rounded-xl border border-slate-200 p-4">
+                <p class="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
+                    <i data-lucide="credit-card" class="h-3.5 w-3.5 text-primary-600"></i> Metode Pembayaran
+                </p>
+                <p class="text-sm font-semibold text-slate-700"><?= htmlspecialchars(label_metode_pembayaran($metode)) ?></p>
             </div>
 
             <!-- Tabel rincian -->
@@ -228,11 +244,11 @@ require_once __DIR__ . '/../components/navbar.php';
 
             <!-- Aksi -->
             <div class="mt-6 flex flex-wrap justify-center gap-3">
-                <a href="../index.php" class="btn-primary">
-                    <i data-lucide="store" class="h-4 w-4"></i> Kembali ke Beranda
+                <a href="../pesanan.php" class="btn-primary">
+                    <i data-lucide="receipt-text" class="h-4 w-4"></i> Lihat Riwayat Pesanan
                 </a>
-                <a href="../keranjang.php" class="btn-outline">
-                    <i data-lucide="shopping-cart" class="h-4 w-4"></i> Lihat Keranjang
+                <a href="../index.php" class="btn-outline">
+                    <i data-lucide="store" class="h-4 w-4"></i> Kembali ke Beranda
                 </a>
             </div>
 

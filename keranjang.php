@@ -247,6 +247,14 @@ require_once __DIR__ . '/components/navbar.php';
                                   placeholder="Masukkan alamat lengkap pengiriman"
                                   class="input-field mb-4 resize-none"><?= htmlspecialchars($user['alamat'] ?? '') ?></textarea>
 
+                        <label for="metode_pembayaran" class="label-field">Metode Pembayaran</label>
+                        <select id="metode_pembayaran" name="metode_pembayaran" required class="input-field mb-4">
+                            <option value="">-- Pilih Metode Pembayaran --</option>
+                            <option value="transfer">Transfer Bank</option>
+                            <option value="ewallet">E-Wallet</option>
+                            <option value="cod">COD (Bayar di Tempat)</option>
+                        </select>
+
                         <button type="submit" class="btn-primary btn-block btn-lg">
                             <i data-lucide="credit-card" class="h-5 w-5"></i> Checkout Sekarang
                         </button>

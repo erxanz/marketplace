@@ -100,6 +100,9 @@ function tampilkan_pesan()
         'keranjang-kosong' => ['warning', 'Keranjang masih kosong.'],
         'stok-kurang'      => ['danger', 'Checkout gagal: stok produk tidak mencukupi.'],
         'alamat-kosong'    => ['danger', 'Alamat pengiriman wajib diisi.'],
+        'metode-invalid'   => ['danger', 'Metode pembayaran wajib dipilih.'],
+        'status-ubah'      => ['success', 'Status pesanan berhasil diperbarui.'],
+        'status-gagal'     => ['danger', 'Status pesanan tidak dapat diperbarui.'],
         'checkout-gagal'   => ['danger', 'Checkout gagal, transaksi dibatalkan. Silakan coba lagi.'],
         'upload-gagal'     => ['danger', 'Gagal mengunggah gambar. Pastikan format JPG/PNG/WEBP dan ukuran maksimal 2 MB.'],
         'input-kurang'     => ['danger', 'Semua field wajib diisi dengan benar.'],
@@ -132,6 +135,35 @@ function tampilkan_pesan()
         . ' class="absolute right-2 top-2 rounded-lg p-1 opacity-60 transition hover:opacity-100">'
         . '<i data-lucide="x" class="h-4 w-4"></i></button>'
         . '</div>';
+}
+
+// ------------------------------------------------------------
+// Badge status pesanan (dipakai riwayat & kelola pesanan)
+// ------------------------------------------------------------
+function badge_status_pesanan($status)
+{
+    $peta = [
+        'menunggu'   => ['badge-warning', 'Menunggu', 'bg-amber-500'],
+        'diproses'   => ['badge-info', 'Diproses', 'bg-sky-500'],
+        'dikirim'    => ['badge-indigo', 'Dikirim', 'bg-indigo-500'],
+        'selesai'    => ['badge-success', 'Selesai', 'bg-primary-500'],
+        'dibatalkan' => ['badge-danger', 'Dibatalkan', 'bg-rose-500'],
+    ];
+    $info = $peta[$status] ?? ['badge-slate', ucfirst($status), 'bg-slate-500'];
+    return '<span class="' . $info[0] . '"><span class="h-1.5 w-1.5 rounded-full ' . $info[2] . '"></span> ' . $info[1] . '</span>';
+}
+
+// ------------------------------------------------------------
+// Label metode pembayaran (transfer / ewallet / cod)
+// ------------------------------------------------------------
+function label_metode_pembayaran($metode)
+{
+    $peta = [
+        'transfer' => 'Transfer Bank',
+        'ewallet'  => 'E-Wallet',
+        'cod'      => 'COD (Bayar di Tempat)',
+    ];
+    return $peta[$metode] ?? '-';
 }
 
 // ------------------------------------------------------------

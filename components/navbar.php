@@ -46,6 +46,13 @@ $cari = $_GET['cari'] ?? '';
                     <?php endif; ?>
                 </span>
             </a>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="<?= $base ?>pesanan.php" class="nav-link <?= basename($_SERVER['SCRIPT_NAME']) === 'pesanan.php' ? 'nav-link-active' : '' ?>">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="receipt-text" class="h-4 w-4"></i> Pesanan
+                    </span>
+                </a>
+            <?php endif; ?>
             <?php if (($_SESSION['role'] ?? '') === 'penjual'): ?>
                 <a href="<?= $base ?>admin/produk.php" class="nav-link">Kelola Produk</a>
             <?php elseif (($_SESSION['role'] ?? '') === 'admin'): ?>
@@ -98,6 +105,9 @@ $cari = $_GET['cari'] ?? '';
                     <span class="rounded-full bg-primary-600 px-1.5 text-[10px] font-bold text-white"><?= $jumlah_keranjang ?></span>
                 <?php endif; ?>
             </a>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="<?= $base ?>pesanan.php" class="nav-link">Pesanan</a>
+            <?php endif; ?>
             <?php if (($_SESSION['role'] ?? '') === 'penjual'): ?>
                 <a href="<?= $base ?>admin/produk.php" class="nav-link">Kelola Produk</a>
             <?php elseif (($_SESSION['role'] ?? '') === 'admin'): ?>
